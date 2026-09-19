@@ -1,0 +1,30 @@
+# .gitignore —— 白名单模式：只追踪 Markdown 与图片
+# 派生自 ~/my_project/.gitignore，按需要精简（2026-09-19）
+
+# 1) 先忽略所有内容
+*
+!*/
+
+# 2) 只放行 Markdown 文档
+!*.md
+!*.markdown
+
+# 3) 只放行图片
+!*.png
+!*.jpg
+!*.jpeg
+!*.gif
+!*.bmp
+!*.webp
+!*.svg
+!*.tif
+!*.tiff
+!*.heic
+!*.ico
+
+# 4) 规则文件本身入库，便于换机同步
+!.gitignore
+
+# 说明：PDF / PPT / DOC(X) / 代码 / 数据 / 压缩包 / 缓存 / 环境变量等
+# 均未放行，自动被上面的 * 忽略，无需逐条列出。
+# 如需临时追踪某个文件，用 git add -f <路径>，或在此追加 !<路径>。
