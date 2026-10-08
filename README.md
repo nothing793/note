@@ -59,6 +59,11 @@
 - 图片：`*.png`、`*.jpg`、`*.jpeg`、`*.gif`、`*.bmp`、`*.webp`、`*.svg`、`*.tif(f)`、`*.heic`、`*.ico`
 
 显式排除：`AGENTS.md`（本地规则文件）。
+**笔记自检脚本与配图脚本也是显式例外**（`.gitignore` §10）：
+`ADS/assets/check_md_anchors.py`、`ADS/assets/check_md_links.py` 与 `ADS/笔记/assets/*.py` 入库 ——
+网站自检脚本 `网站/check_site.py` 把 `check_md_anchors.py` 当作锚点规则的**唯一标准**，
+笔记正文也直接链接那些「生成配图」的重绘脚本；这些 `.py` 被忽略时，
+GitHub Actions 检出后缺文件，自检会直接报错退出（构建失败）。
 **网站工程是白名单的显式例外**（`.gitignore` §8、§9）：`网站/mkdocs.yml`、`网站/requirements.txt`、
 `网站/*.py`、`网站/static/*.js` 与本地打包的 MathJax（`网站/vendor/**/*.js`、`*.woff`）入库，
 自动部署工作流 `.github/workflows/pages.yml` 也入库；

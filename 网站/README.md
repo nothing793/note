@@ -68,6 +68,11 @@ MkDocs 默认的 slug 规则与之不同（会把连续空格 / 连字符并成�
 - 不发布 `ADS/笔记/tasks.md`（个人待办草稿，见 `prepare.py` 的 `SKIP_FILES`）；
 - 不发布讲义原件（`ADS/Materials/`、`sys2/*.pdf`）与其他课程目录。
 
+注意：上列 `.py`（`ADS/笔记/assets/*.py`）与两个自检脚本 `ADS/assets/check_md_anchors.py`、
+`ADS/assets/check_md_links.py` 必须在仓库里（`.gitignore` §10 手工放行）。`check_site.py`
+以 `check_md_anchors.py` 为锚点规则的唯一标准：CI 检出时缺这个文件会直接退出，
+报「找不到锚点规则脚本」；笔记正文直接链接 `assets/*.py`，缺文件会报「站点里缺少文件」。
+
 ## 4. 自检都查什么
 
 `python 网站/check_site.py`（通常由 `build.py` 自动调用）：

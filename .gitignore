@@ -53,3 +53,12 @@ AGENTS.md
 
 # 9) 笔记网站的 GitHub Pages 自动部署工作流
 !/.github/workflows/*.yml
+
+# 10) 笔记自检脚本与「生成配图」脚本必须入库：网站构建依赖它们
+#     - ADS/assets/check_md_anchors.py：`网站/check_site.py` 把它当作锚点规则的唯一标准，
+#       CI 检出时缺这个文件，自检会直接 sys.exit 报「找不到锚点规则脚本」→ 构建失败；
+#     - ADS/assets/check_md_links.py：同一套自检工具（仓库 README / ADS/AGENTS.md 里都在用）；
+#     - ADS/笔记/assets/*.py：笔记正文直接链接这些重绘脚本（便于复现），
+#       不入库会让 check_site.py 报「站点里缺少文件 assets/xxx.py」。
+!/ADS/assets/*.py
+!/ADS/笔记/assets/*.py
