@@ -1,0 +1,65 @@
+name: 构建并发布笔记网站
+
+# 推送 master 后自动：汇集笔记 → 构建站点 → 跑链接自检 → 发布到 GitHub Pages。
+# 前置：仓库 Settings → Pages → Source 选 “GitHub Actions”。
+# 站点工程见 网站/README.md；本工作流只是把它在 CI 上跑一遍。
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 安装 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: 网站/requirements.txt
+
+      - name: 安装站点依赖
+        run: pip install -r 网站/requirements.txt
+
+      # MathJax 已随仓库入库（网站/vendor/），CI 无需联网下载
+      - name: 构建站点（内部会跑 check_site.py）
+        run: python 网站/build.py
+
+      - name: 核对自检报告
+        run: |
+          test -f 网站/.cache/check_report.txt
+          cat 网站/.cache/check_report.txt
+          grep -q "全部通过" 网站/.cache/check_report.txt
+
+      - name: 配置 Pages
+        uses: actions/configure-pages@v5
+
+      - name: 上传站点产物
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 网站/site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 发布到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

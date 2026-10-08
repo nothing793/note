@@ -34,3 +34,22 @@
 
 # 6) AGENTS.md 系列规则文件：仅保留在本地，不入库
 AGENTS.md
+
+# 7) 笔记网站（网站/）：构建产物与暂存目录不入库
+#    `.docs` 用点号开头：仓库自带的两个自检脚本会自动跳过 `.` 开头的目录，
+#    因此不必给它们传 -x，也不会把生成副本当成笔记重复检查
+/网站/.docs/
+/网站/site/
+/网站/.cache/
+
+# 8) 网站工程本身入库：配置、脚本、静态资源，以及本地打包的 MathJax
+#    （MathJax 入库是为了离线也能构建 / 浏览，不依赖 CDN）
+!/网站/mkdocs.yml
+!/网站/requirements.txt
+!/网站/*.py
+!/网站/static/*.js
+!/网站/vendor/**/*.js
+!/网站/vendor/**/*.woff
+
+# 9) 笔记网站的 GitHub Pages 自动部署工作流
+!/.github/workflows/*.yml

@@ -1,0 +1,4 @@
+# 站点构建依赖（MkDocs + Material 主题 + 中文分词）
+# 安装：pip install -r 网站/requirements.txt
+mkdocs-material>=9.7,<10
+jieba>=0.42

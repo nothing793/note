@@ -1,0 +1,124 @@
+# 站点配置：把三门课的笔记（ADS · 密码学基础 · 计算机系统 II）发布成一个静态网站。
+#
+# 页面内容来自仓库里各自的 `笔记/` 目录，由 prepare.py 汇集到 .docs/，
+# 所以**不要直接改 .docs/ 里的文件**（每次构建都会被覆盖），要改就改原件。
+#
+# 构建：python 网站/build.py      （= prepare + mkdocs build + 链接自检）
+# 预览：python 网站/build.py -s   （本地 http://127.0.0.1:8000）
+
+site_name: 学习笔记
+site_description: 浙江大学本科课程笔记 —— 高级数据结构与算法分析 · 密码学基础 · 计算机系统 II
+site_url: https://nothing793.github.io/note/
+repo_url: https://github.com/nothing793/note
+repo_name: nothing793/note
+copyright: 笔记由 AI 依据课程讲义整理，仅供个人学习；公式与结论以讲义和教材为准。
+
+docs_dir: .docs
+site_dir: site
+
+theme:
+  name: material
+  language: zh
+  features:
+    - navigation.tabs
+    - navigation.top
+    - navigation.tracking
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-night
+        name: 切换到深色模式
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: 切换到浅色模式
+
+markdown_extensions:
+  # 标题锚点必须与 GitHub / VS Code 预览一致，否则笔记里 480 余条
+  # `其他笔记.md#小节` 链接会在站点上失效 —— 用 gh_slug.py 复刻 GitHub 的算法。
+  - toc:
+      permalink: true
+      permalink_title: 复制本小节链接
+      slugify: !!python/name:gh_slug.slugify
+      toc_depth: 3
+  - tables
+  - attr_list
+  - md_in_html
+  - def_list
+  - footnotes
+  - sane_lists
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  # 公式走 arithmatex 的 generic 模式，输出 \(...\) / \[...\]，由本地 MathJax 渲染
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - assets/mathjax-config.js
+  - assets/vendor/mathjax/es5/tex-chtml.js
+
+plugins:
+  - search:
+      lang:
+        - zh
+        - en
+
+nav:
+  - 首页: index.md
+  - ADS 高级数据结构与算法分析:
+      - 笔记索引: ADS/笔记/00_索引.md
+      - ADS00 课程介绍与考核: ADS/笔记/01_ADS00_课程介绍与考核.md
+      - ADS01 伸展树与摊还分析: ADS/笔记/02_ADS001_伸展树与摊还分析.md
+      - ADS02 红黑树与 B+ 树: ADS/笔记/03_ADS02_红黑树与B+树.md
+      - ADS03 倒排文件索引: ADS/笔记/04_ADS03_倒排文件索引.md
+      - ADS04 左式堆与斜堆: ADS/笔记/05_ADS04_左式堆与斜堆.md
+      - ADS05 二项队列: ADS/笔记/06_ADS05_二项队列.md
+      - ADS06 回溯算法: ADS/笔记/07_ADS06_回溯算法.md
+      - ADS07 分治法与递归式: ADS/笔记/08_ADS07_分治法与递归式.md
+      - ADS08 动态规划: ADS/笔记/09_ADS08_动态规划.md
+      - ADS09 贪心算法: ADS/笔记/10_ADS09_贪心算法.md
+      - ADS10 NP 完全性: ADS/笔记/11_ADS10_NP完全性.md
+      - ADS11 近似算法: ADS/笔记/12_ADS11_近似算法.md
+      - ADS12 局部搜索: ADS/笔记/13_ADS12_局部搜索.md
+      - ADS13 随机化算法: ADS/笔记/14_ADS13_随机化算法.md
+      - ADS14 并行算法: ADS/笔记/15_ADS14_并行算法.md
+      - ADS15 外部排序: ADS/笔记/16_ADS15_外部排序.md
+  - 密码学基础:
+      - 笔记索引: 密码学基础/笔记/00_索引.md
+      - 01 导论与密码学原则: 密码学基础/笔记/01_导论与密码学原则.md
+      - 02 完美保密与一次性密码本: 密码学基础/笔记/02_完美保密与一次性密码本.md
+      - 03 单向函数与伪随机生成器: 密码学基础/笔记/03_单向函数与伪随机生成器.md
+      - 04 多消息安全与 IND-CPA: 密码学基础/笔记/04_多消息安全与IND-CPA.md
+      - 05 伪随机函数与伪随机置换: 密码学基础/笔记/05_伪随机函数与伪随机置换.md
+      - 06 消息认证码 MAC: 密码学基础/笔记/06_消息认证码MAC.md
+      - 07 哈希函数与 Merkle–Damgård 结构: 密码学基础/笔记/07_哈希函数与Merkle-Damgård结构.md
+      - 08 CCA 安全与认证加密: 密码学基础/笔记/08_CCA安全与认证加密.md
+      - 09 数论基础与密码学硬假设: 密码学基础/笔记/09_数论基础与密码学硬假设.md
+      - 10 密钥交换与 Diffie–Hellman: 密码学基础/笔记/10_密钥交换与Diffie-Hellman.md
+      - 11 公钥加密与 ElGamal: 密码学基础/笔记/11_公钥加密与ElGamal.md
+      - 12 作业一：OTP 缺陷与 OWF/PRG: 密码学基础/笔记/12_习题一_OTP缺陷与OWF-PRG关系.md
+      - 13 考试范围与复习要点: 密码学基础/笔记/13_考试范围与复习要点.md
+      - 14 期中试卷（25 秋冬）: 密码学基础/笔记/14_期中试卷_25秋冬.md
+  - 计算机系统 II:
+      - 笔记索引: sys2/笔记/00_索引.md
+      - 第 1 讲 课程介绍与 ISA 设计原理: sys2/笔记/01_第01讲_课程介绍与ISA设计原理.md
+      - 第 2 讲 流水线：概念、分类与性能评价: sys2/笔记/02_第02讲_流水线概念分类与性能评价.md
+      - 第 3 讲 流水线冒险与控制: sys2/笔记/03_第03讲_流水线冒险与控制.md
+  - 关于:
+      - 仓库说明: 关于仓库.md
