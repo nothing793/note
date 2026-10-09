@@ -30,7 +30,11 @@ DOCS = HERE / ".docs"
 COURSES = ["ADS", "密码学基础", "sys2"]
 SKIP_DIRS = {"__pycache__"}
 SKIP_SUFFIXES = {".pyc", ".pyo"}
-SKIP_FILES = {"tasks.md"}               # 个人待办草稿，不作为笔记发布
+SKIP_FILES = {
+    "tasks.md",                          # 个人待办草稿，不作为笔记发布
+    "README.md",                         # 目录说明（仓库内用）；MkDocs 会把 README.md 当 index.md，
+                                         # 与 check_site.py 的「md → 同名 html」核对冲突，故不发布
+}
 
 # 复制关系：(源, 目标) —— 目标都相对 .docs/
 #
