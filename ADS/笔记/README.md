@@ -34,7 +34,7 @@
 - `fig_*.png`：配图。既有**讲义原页导出**的图，也有**自绘**图（如 `fig_leftist_*`、`fig_skew_*` 由脚本生成）；
   自绘图在图注中均标明「自绘」；
 - `make_*.py`：生成自绘配图的脚本（`make_avl_figs.py`、`make_splay_figs.py`、`make_amort_figs.py`、
-  `make_leftist_skew_figs.py`、`make_ads02_figs.py`、`make_ads_notes_figs.py`）——**入库**（`.gitignore` §10 白名单放行），
+  `make_leftist_skew_figs.py`、`make_ads02_figs.py`、`make_ads_notes_figs.py`、`make_ads05_figs.py`）——**入库**（`.gitignore` §10 白名单放行），
   笔记正文直接链接这些脚本，便于复现；
 - 图一律用**相对路径**引用（`assets/fig_*.png`），不写绝对路径、不内嵌 base64。
 
