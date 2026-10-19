@@ -3,7 +3,7 @@
 > 来源：用户提供的课程资料（一份速查表提纲 ＋ 一份按课次记录的课程笔记 Lec1–Lec13；详见 [`00_索引.md`](00_索引.md) §1）
 > 整理日期：2026-09-21
 > 说明：本文由 AI 依据上述资料整理；资料这一节较短（只给定义骨架 + 游戏骨架），**凡资料未展开的内容本笔记不补**，只标注对应教材章节。
-> 教材对照：Katz & Lindell（Revised 3rd ed.）**§4.1** Message Integrity（§4.1.1 Secure vs. Integrity / §4.1.2 Encryption vs. Message Authentication）、**§4.2** Message Authentication Codes (MACs) – Definitions、**§4.3** Constructing Secure MACs（§4.3.1 A Fixed-Length MAC / §4.3.2 Domain Extension for MACs）、**§4.4** CBC-MAC、**§4.5** GMAC and Poly1305、**§4.6** \*Information-Theoretic MACs。
+> 教材对照：Katz & Lindell（2007 年第 1 版）**§4.1** Secure Communication and Message Integrity、**§4.2** Encryption and Message Authentication、**§4.3** MAC – Definitions（Definition 4.1 语法 / Definition 4.2 存在性不可伪造）、**§4.4** Constructing Secure MACs（Construction 4.3 定长 / Theorem 4.4 / Construction 4.5 变长 / Theorem 4.6）、**§4.5** CBC-MAC（Construction 4.7 / Theorem 4.8）、**§4.7** NMAC and HMAC。
 
 ## 0. 本节速览
 
@@ -12,8 +12,8 @@
 | §1 | 关注点转向 | 不动机密性，转而关注**可信性/完整性**：消息有没有被改。 |
 | §2 | MAC 的基本形状 | $\mathrm{MAC}(sk,m)\to\tau$，发送 $(m,\tau)$；攻击者必须**伪造** $(m',\tau')$。 |
 | §3 | 与数字签名的差别 | 资料一句提醒：“**真实的数字签名没有 $sk$**”（对称 vs 非对称）。 |
-| §4 | 攻击模型 | UCMA（选择消息攻击下的不可伪造），与 EUF-CMA 的关系。 |
-| §5 | 方案骨架与游戏 | $\{\mathrm{Gen},\mathrm{MAC},\mathrm{Verify}\}$ 三个算法；对手反复询问后提交 $(m^{*},\tau^{*})$，$\mathbb{P}[\mathcal{A}\ \text{wins}]=\mathbb{P}[\mathrm{Verify}(m^{*},\tau^{*})=1]=\mathtt{negl}(n)$。 |
+| §4 | 攻击模型 | **EUF-CMA**（教材 Definition 4.2）；课程口中的 UCMA 指同一个模型。 |
+| §5 | 方案骨架与游戏 | $\{\mathrm{Gen},\mathrm{Mac},\mathrm{Vrfy}\}$ 三个算法；对手自适应地询问标签后提交 $(m^{*},\tau^{*})$，当且仅当 $\mathrm{Vrfy}_k(m^{*},\tau^{*})=1$ **且** $m^{*}\notin Q$ 时获胜，且获胜概率 $\le\mathrm{negl}(n)$。 |
 
 ---
 
@@ -38,40 +38,48 @@ $$\mathrm{MAC}(sk,m)\ \to\ \tau,\qquad \text{发送 }(m,\tau)$$
 - 也就是：MAC 是对称的（验证也需要密钥），因此**任何能验证的人都能伪造**；数字签名是非对称的，用**公钥**验证、私钥签名，所以“验证方”不会顺带获得伪造能力。
 - 本节只讲对称情形（教材 §4；数字签名在课程后半段/公钥部分）。
 
-## 4. 攻击模型：UCMA / EUF-CMA
+## 4. 攻击模型：EUF-CMA（课程口中的 UCMA）
 
-- 资料把这一节标作 **unforgeability chosen message attack（UCMA）**——**选择消息攻击下的不可伪造性**。
-- 资料给出的关系说明（原文照录）：
+教材 **Definition 4.2** 的正式名称是：MAC 在**自适应选择消息攻击下存在性不可伪造**（existentially unforgeable under an adaptive chosen-message attack），通常缩写为 **EUF-CMA**。课程资料把它叫 **UCMA**（unforgeability under chosen-message attack），指的是同一个攻击模型；**教材没有把 UCMA 与 EUF-CMA 定义成两个不同的东西**。
 
-> UCMA 模型的安全性通常与数字签名的**存在性不可伪造性（Existential Unforgeability）**相关联。如果一个数字签名方案在 UCMA 模型下是安全的，那么可以认为该方案具有 **EUF-CMA（Existential Unforgeability under Chosen Message Attacks）**的安全性。
+教材的判定条件（Definition 4.2）：
 
-> 待确认：资料把 UCMA 与 EUF-CMA 当作“可以认为等价”的关系来说，但没有给出定义级的对照（例如是否允许“新消息”还是要求“新标签”、是否允许对已验证过的 $m$ 再问等）。**考试作答时建议直接使用 EUF-CMA 的标准定义**（教材 §4.2 Definition 4.2 及 §4.3），资料这段只作为记忆线索。
+- 敌手 $\mathcal{A}$ 可**自适应**访问标签预言机 $\mathrm{Mac}_k(\cdot)$；
+- 令 $Q$ 为 $\mathcal{A}$ 询问过的消息集合；
+- $\mathcal{A}$ 输出 $(m,t)$；当且仅当 **$m\notin Q$ 且 $\mathrm{Vrfy}_k(m,t)=1$** 时，实验 $\mathrm{Mac\text{-}forge}_{\mathcal{A},\Pi}(n)$ 输出 1；
+- 安全要求：对每个 PPT $\mathcal{A}$，存在可忽略函数 $\mathrm{negl}$ 使
+$$\Pr\bigl[\mathrm{Mac\text{-}forge}_{\mathcal{A},\Pi}(n)=1\bigr]\le\mathrm{negl}(n).$$
+
+> 要点：只要求对**任意一条没问过标签的新消息**伪造成功，不要求伪造指定消息；这正是“存在性”不可伪造。教材 §4.3 还指出：任何 MAC 都可能以可忽略概率被随机猜中，因此上界只能是 $\mathrm{negl}(n)$，不能要求概率为 0。
 
 ## 5. 方案骨架与安全游戏
 
 ### 5.1 三个算法
 
 $$\begin{cases}
-\mathrm{Gen}(1^{n})\to sk\\
-\mathrm{MAC}(sk,m)\to\tau\\
-\mathrm{Verify}(sk,\tau,m)\in\{0,1\}
+\mathrm{Gen}(1^{n})\to k\\
+\mathrm{Mac}_k(m)\to t\\
+\mathrm{Vrfy}_k(m,t)\in\{0,1\}
 \end{cases}$$
+
+> 记号：上式是教材（Definition 4.1）的写法；课程资料把后两个算法记作 $\mathrm{MAC}(sk,m)\to\tau$ 与 $\mathrm{Verify}(sk,\tau,m)$，含义相同。
 
 ### 5.2 游戏
 
-$$\mathrm{ch}\xrightarrow{\mathrm{Gen},\mathrm{MAC},\mathrm{Verify}}\mathcal{A};
+$$\mathrm{ch}\xrightarrow{\mathrm{Gen}(1^n)}\mathcal{A};
 \qquad
-\mathrm{ch}\underset{\mathrm{MAC}_{sk}(m_1)/\mathrm{Verify}_{sk}(m_1)}{\overset{m_1/(m_1,\tau_1)}{\leftrightharpoons}}\mathcal{A};
+\mathrm{ch}\underset{\mathrm{Mac}_k(m_1)}{\overset{m_1}{\leftrightharpoons}}\mathcal{A};
 \ \cdots\ ;
 \qquad
-\mathrm{ch}\underset{\mathrm{MAC}_{sk}(m_t)}{\overset{m_t}{\leftrightharpoons}}\mathcal{A};
+\mathrm{ch}\underset{\mathrm{Mac}_k(m_t)}{\overset{m_t}{\leftrightharpoons}}\mathcal{A};
 \qquad
-\mathrm{ch}\underset{\tau^{*}}{\overset{m^{*}}{\leftarrow}}\mathcal{A}$$
+\mathcal{A}\longrightarrow(m^{*},\tau^{*})$$
 
-- 即：$\mathcal{A}$ 可以**反复**向 $ch$ 要标签（也可以问验证），最后提交一对 $(m^{*},\tau^{*})$ 作为伪造尝试。
+- 即：$\mathcal{A}$ 可以**自适应地反复**向 $ch$ 要标签，最后提交一对 $(m^{*},\tau^{*})$ 作为伪造尝试；记 $Q$ 为它问过的**所有消息集合**。
+- **教材口径（Definition 4.2）**：Mac-forge 只给**标签生成 oracle** $\mathrm{Mac}_k(\cdot)$，**不给**验证 oracle。课程资料的游戏图里多画了一条 $\mathrm{Verify}_{sk}$ 通道；本笔记以教材为准，把它视为**课程补充**（对确定性 MAC，验证 oracle 基本不增加能力，但教材的定义里没有它）。
 - 安全性：
 
-$$\mathbb{P}[\mathcal{A}\ \text{wins}]=\mathbb{P}[\,\mathrm{Verify}(m^{*},\tau^{*})=1\,]=\mathtt{negl}(n)$$
+$$\Pr[\mathcal{A}\ \text{wins}]=\Pr[\mathrm{Vrfy}_k(m^{*},\tau^{*})=1\wedge m^{*}\notin Q]\le\mathrm{negl}(n)$$
 
 - 资料特别提醒（很重要的一句）：
 
@@ -95,13 +103,15 @@ $$\mathbb{P}[\mathcal{A}\ \text{wins}]=\mathbb{P}[\,\mathrm{Verify}(m^{*},\tau^{
 
 $$\Pr\bigl[\mathrm{Mac\text{-}forge}_{\mathcal{A},\Pi}(n)=1\bigr]\le\mathrm{negl}(n)$$
 
-- 课程笔记注明：这也被称为 **UF-CMA**（选择消息攻击下的不可伪造性）——正好补齐了 [§4](#4-攻击模型ucma--euf-cma) 里资料只说“UCMA ≈ EUF-CMA”的那一处缺口（**这里的“$m\notin Q$”就是“存在性”**）。
+- 课程笔记注明：这也被称为 **UF-CMA**（选择消息攻击下的不可伪造性）——正好补齐了 [§4](#4-攻击模型euf-cma课程口中的-ucma) 里资料只说“UCMA ≈ EUF-CMA”的那一处缺口（**这里的“$m\notin Q$”就是“存在性”**）。
 
 ![MAC 相关配图（截图引自课程笔记）](assets/fig_l7_mac.png)
 
 ## 6. 具体的 MAC 构造
 
-资料只给了 MAC 的定义与游戏；课程笔记在“期末考要点”里补了**三种构造**，正好对上教材第 4 章的三条主线：
+资料只给了 MAC 的定义与游戏；课程笔记在“期末考要点”里补了**三种构造**。
+
+> **教材口径（2026-10-19）**：教材第 4 章的构造主线是 **Construction 4.3（由 PRF 构造定长 MAC，Theorem 4.4）→ Construction 4.5（变长 MAC）→ Construction 4.7（CBC-MAC，Theorem 4.8，仅定长消息）**；§4.7 另有 NMAC/HMAC。下面 §6.1–§6.5 中，**由 PRF 构造定长 MAC、CBC-MAC、CBC-MAC vs CBC 加密**对应教材；**“变长 MAC 的四次尝试”“ECBC-MAC”“MAC + 抗碰撞 Hash”**是课程笔记的讲法，教材没有同名小节，已就地标为**课程补充**。
 
 ### 6.1 由 PRF 构造**定长** MAC（及归约证明）
 
@@ -147,15 +157,15 @@ $$|\varepsilon_0-2^{-n}|\le\mathrm{negl}(n)\ \Longrightarrow\ \varepsilon_0\le2^
 - 输出 $t_l$ 作为 MAC 标签；
 - **仅对定长消息安全**（课程笔记原句）。
 
-> 教材对照：§4.4 CBC-MAC（§4.4.1 The Basic Construction / §4.4.2 \*Proof of Security）。
+> 教材对照：§4.5 CBC-MAC（Construction 4.7 / Theorem 4.8；教材只对**固定长度**消息证明安全）。
 
 ### 6.4 CBC-MAC 的两个细节与“变长 CBC-MAC”
 
-**（a）Basic CBC-MAC 长什么样**（教材 CONSTRUCTION 4.9）：对长度恰为 $\ell(n)\cdot n$ 的定长消息
+**（a）Basic CBC-MAC 长什么样**（教材 CONSTRUCTION 4.7）：对长度恰为 $\ell(n)\cdot n$ 的定长消息
 
 $$t_0:=0^n,\qquad t_i:=F_k(t_{i-1}\oplus m_i)\ (i=1,\dots,\ell),\qquad \text{输出 } t_\ell$$
 
-![Basic CBC-MAC（教材 CONSTRUCTION 4.9：“for fixed-length messages”；截图引自课程笔记）](assets/fig_l8_cbcmac_1.png)
+![Basic CBC-MAC（教材 CONSTRUCTION 4.7：“for fixed-length messages”；截图引自课程笔记）](assets/fig_l8_cbcmac_1.png)
 
 **（b）既然只对定长安全，为什么还要用它？**
 
@@ -204,7 +214,7 @@ $$t_0:=0^n,\qquad t_i:=F_k(t_{i-1}\oplus m_i)\ (i=1,\dots,\ell),\qquad \text{输
    - 要么伪造 $\mathrm{MAC}_k$ 对新消息 $H(m)$ 的标签；
 2. 因此，**如果 $\mathrm{MAC}$ 安全且 $H$ 抗碰撞，则 $\mathrm{MAC}'$ 安全**。
 
-> 教材对照：§4.3.2 Domain Extension for MACs（“固定长度 MAC + 抗碰撞 Hash ⇒ 变长 MAC”正是教材的路线）。
+> 教材对照：教材的变长 MAC 在 **§4.4**（Construction 4.5：随机标识符 + 位置/总块数编码），不是“固定长度 MAC + 抗碰撞 Hash”；后者是课程补充的 Hash-and-MAC 思路，见 [`07`](07_哈希函数与Merkle-Damgård结构.md)。
 > 相关：Merkle–Damgård 结构与 Hash 见 [`07_哈希函数与Merkle-Damgård结构.md`](07_哈希函数与Merkle-Damgård结构.md)。
 
 ### 6.6 Padding Oracle Attack：为什么必须“机密性 + 完整性”一起要
@@ -220,14 +230,14 @@ $$t_0:=0^n,\qquad t_i:=F_k(t_{i-1}\oplus m_i)\ (i=1,\dots,\ell),\qquad \text{输
 |---|---|---|
 | 标签生成 | $\mathrm{MAC}(sk,m)\to\tau$ | [§2](#2-mac-的基本形状) |
 | 验证 | $\mathrm{Verify}(sk,\tau,m)\in\{0,1\}$ | [§5.1](#51-三个算法) |
-| 伪造成功概率 | $\mathbb{P}[\mathrm{Verify}(m^{*},\tau^{*})=1]=\mathtt{negl}(n)$ | [§5.2](#52-游戏) |
-| 攻击模型 | UCMA / EUF-CMA | [§4](#4-攻击模型ucma--euf-cma) |
+| 伪造成功概率 | $\Pr[\mathrm{Mac\text{-}forge}_{\mathcal{A},\Pi}(n)=1]\le\mathrm{negl}(n)$ | [§5.2](#52-游戏) / 教材 Definition 4.2 |
+| 攻击模型 | EUF-CMA（教材 Definition 4.2；课程称 UCMA） | [§4](#4-攻击模型euf-cma课程口中的-ucma) |
 
 ## 8. 听课重点与易混点
 
 1. **机密性 ≠ 完整性**：加密方案（哪怕 CPA 安全）**不保证**密文没被改过；反之 MAC 也不保密（它不隐藏 $m$）。
 2. **“存在性不可伪造”要看清允许伪造的范围**：对手只需要对**任意一条没问过标签的消息**伪造成功，就算赢——这比“伪造指定消息”弱，但仍要求 $\mathtt{negl}(n)$。
-3. **MAC 是对称的**：能验证 = 能伪造，这是 MAC 与数字签名的根本差别。
+3. **MAC 是对称的**：验证者持有同一把密钥，因此**知道密钥的人都能生成标签**；数字签名则用私钥签名、公钥验证，验证者不能伪造。
 4. **离线计算不受限**（资料“开挂”那句）：安全性完全靠密钥的保密性与方案本身的不可伪造性撑着。
 
 ## 9. 复习清单
@@ -235,7 +245,7 @@ $$t_0:=0^n,\qquad t_i:=F_k(t_{i-1}\oplus m_i)\ (i=1,\dots,\ell),\qquad \text{输
 - [ ] MAC 与加密方案各自保证什么？为什么加密不保证完整性？（[§1](#1-关注点的转移)）
 - [ ] 写出 MAC 的三个算法与验证的条件。（[§5.1](#51-三个算法)）
 - [ ] 复述 MAC 的安全游戏，并说明 $\mathcal{A}$ 什么时候算赢。（[§5.2](#52-游戏)）
-- [ ] UCMA 与 EUF-CMA 分别是什么？二者是什么关系？（[§4](#4-攻击模型ucma--euf-cma)）
+- [ ] UCMA 与 EUF-CMA 分别是什么？二者是什么关系？（[§4](#4-攻击模型euf-cma课程口中的-ucma)）
 - [ ] 为什么数字签名不需要 $sk$，而 MAC 需要？（[§3](#3-与数字签名的差别)）
 
 - [ ] 默写 CBC-MAC 的迭代式，并说明“仅对定长消息安全”意味着什么攻击面。（[§6.1](#63-cbc-mac定长-mac)）
@@ -244,12 +254,12 @@ $$t_0:=0^n,\qquad t_i:=F_k(t_{i-1}\oplus m_i)\ (i=1,\dots,\ell),\qquad \text{输
 ## 10. 关联知识点
 
 - PRF/PRP 是构造 MAC 的常用零件（如固定长度 MAC、CBC-MAC）——见 [`05_伪随机函数与伪随机置换.md`](05_伪随机函数与伪随机置换.md#2-prfs-的定义)；教材 §4.3–§4.4。
-- 认证加密（同时要机密性与完整性）与 CCA 安全——资料「第二次作业：CCA-PRP」只留标题（见 [`00_索引.md`](00_索引.md)）；教材 §5.1–§5.3。
+- 认证加密（同时要机密性与完整性）与 CCA 安全——资料「第二次作业：CCA-PRP」只留标题（见 [`00_索引.md`](00_索引.md)）；教材 §3.7（CCA）、§4.8–§4.9（CCA 安全加密与认证加密）。
 - 归约式证明的通用套路（把“伪造能力”变成“区分能力”）——见 [`03_单向函数与伪随机生成器.md`](03_单向函数与伪随机生成器.md#63-由-prg-得到-eav-安全的加密方案归约的思路)。
-- 教材：§4.1（完整性 vs 机密性）、§4.2（MAC 定义与 EUF-CMA）、§4.3（构造）、§4.4（CBC-MAC）、§4.6（信息论 MAC）。
+- 教材：§4.1（消息完整性与安全通信）、§4.2（加密与消息认证）、§4.3（MAC 语法 Definition 4.1 与 EUF-CMA Definition 4.2）、§4.4（Construction 4.3 / 4.5）、§4.5（CBC-MAC，Construction 4.7 / Theorem 4.8）、§4.6（抗碰撞 Hash）。
 
 ## 11. 来源与延伸阅读
 
 - 来源：用户提供的课程资料（速查表提纲 ＋ 课程笔记 Lec1–Lec13）；清单见 `密码学基础/readme.md`。原始资料（`数据安全与密码学基础.zip` 及其中的附件）均为**只读引用**，未改动。
-- 参考书：Katz & Lindell, *Introduction to Modern Cryptography*（Revised 3rd ed.）**§4.1–§4.6**。
+- 参考书：Katz & Lindell, *Introduction to Modern Cryptography*（2007 年第 1 版）**§4.1–§4.5**、**§4.7**。
 - 仍待补：**Padding Oracle 攻击**资料只给了结论与一句「下一讲将由它引入 CCA」（本笔记不补攻击脚本细节）。

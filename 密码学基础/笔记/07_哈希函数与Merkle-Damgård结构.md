@@ -3,7 +3,7 @@
 > 来源：用户提供的课程资料（一份速查表提纲 ＋ 一份按课次记录的课程笔记 Lec1–Lec13；详见 [`00_索引.md`](00_索引.md) §1）
 > 整理日期：2026-09-21（按完整资料扩写）
 > 说明：本文由 AI 依据上述资料整理（**不是**讲义原文照抄）；课程笔记自己标注 **Lec8 之后带 \* 号的小节是“来不及整理所以用 ai 总结的笔记”**（Lec10 即带 \* 号），引用时请留意这一点。
-> 教材对照：Katz & Lindell（Revised 3rd ed.）**§6.1** Definitions（§6.1.1 Collision Resistance / §6.1.2 Weaker Notions of Security）、**§6.2** Domain Extension: The Merkle–Damgård Transform、**§6.3** Message Authentication Using Hash Functions（§6.3.1 Hash-and-MAC / §6.3.2 HMAC）。
+> 教材对照：Katz & Lindell（2007 年第 1 版）**§4.6** Collision-Resistant Hash Functions（§4.6.1 Definition 4.9 语法 / Definition 4.10 抗碰撞 / §4.6.2 更弱的安全目标 / §4.6.3 生日攻击 / §4.6.4 Merkle–Damgård 变换 Construction 4.11 与 Theorem 4.12 / §4.6.5 实践中的哈希）、**§4.7** NMAC and HMAC。教材**没有**名为“Hash-and-MAC”的独立小节；本笔记把课程里的 Hash-and-MAC 标为课程补充，并与教材 §4.7 的 NMAC/HMAC 区分。
 
 ## 0. 本节速览
 
@@ -44,26 +44,26 @@
 
 ## 2. Merkle–Damgård 变换（MD 结构）
 
-课程笔记原文：**将压缩函数 $f:\{0,1\}^{n}\times\{0,1\}^{l}\to\{0,1\}^{n}$ 扩展为 Hash 函数**。处理变长消息的步骤是：
+教材 **Construction 4.11** 的精确写法（本笔记以此为准）：
 
-1. **填充消息到分组长度的倍数**；
-2. **添加长度块**；
-3. **迭代应用压缩函数**；
-4. **输出最后的状态值**。
+设 $(Gen_h,h)$ 是**定长**抗碰撞哈希函数，输入长度 $2\ell(n)$、输出长度 $\ell(n)$。构造变长哈希 $(Gen,H)$：
 
-课程笔记另外给了“把压缩函数当只能处理一页纸的工具”的比喻与三步说法（含义与上面四步一致）：
+1. **密钥生成**：$Gen(1^n)$ 直接运行 $Gen_h(1^n)$，输出同一个密钥 $s$。
+2. **输入**：$x\in\{0,1\}^*$，长度 $L=|x|\le 2^{\ell(n)}-1$。
+3. **分块与填充**：令 $B=\lceil L/\ell\rceil$，把 $x$ 用 **0** 填充到长度恰为 $B\ell$；分成 $x_1,\dots,x_B$，每块 $\ell$ 位。
+4. **迭代**：$z_0:=0^{\ell}$，对 $i=1,\dots,B$ 计算
+$$z_i:=h_s\bigl(z_{i-1}\Vert x_i\bigr).$$
+5. **长度块**：最后再算一次
+$$H^s(x):=h_s\bigl(z_B\Vert L\bigr),$$
+其中 $L$ 用 $\ell$ 位编码。
 
-> 1. 将书**分页**（分块）；2. 从第一页开始，**结合一个初始向量**算出第一个中间状态；3. 把该状态与下一页结合算出下一个中间状态；4. 如此重复到最后一页，**最终状态就是整本书的哈希值**。
-> “中间状态”的传递就是“**链接**”的核心，它确保了最终输出的哈希值**依赖于之前所有输入块的完整序列**。
+> 教材明确说：$z_0$ 可以是任意常数，通常叫 **IV**；把长度 $L$ 单独放进最后一次压缩，是 MD 结构抗碰撞证明的关键（区分“长度不同”的碰撞与“长度相同”的碰撞）。
+
+课程笔记的“把压缩函数当只能处理一页纸的工具”比喻与上面五步一致：分页 → 结合 IV 算中间状态 → 逐页链接 → 最后加长度块并输出。
 
 ![Merkle–Damgård 结构（截图引自课程笔记）](assets/fig_l10_md.png)
 
-用式子写出“迭代”这一步（整理者按上面的文字补的记号，便于对照教材）：
-
-$$h_0=IV,\qquad h_i=f\bigl(h_{i-1},\,m_i\bigr)\ (i=1,\dots,t),\qquad H(m)=h_t$$
-
-> 待确认：**初始向量 $IV$ 与“长度块”的确切处理方式**课程笔记没有给出（例如长度块是并入最后一个分组还是单独一块、填充规则是什么）。这些细节属于讲义/教材内容，等讲义正文补上后再写。
-> 教材对照：§6.2 Domain Extension: The Merkle–Damgård Transform。
+**教材 Theorem 4.12**：若 $(Gen_h,h)$ 是定长抗碰撞哈希函数，则由 Construction 4.11 得到的 $(Gen,H)$ 是抗碰撞哈希函数。
 
 ## 3. 安全性：为什么“压缩函数抗碰撞”就够了
 
@@ -79,7 +79,7 @@ MD 结构在课程里最直接的用途是**构造变长 MAC**（详见 [`06_消
 - 设 $\mathrm{MAC}_k$ 是**定长 MAC**、$H$ 是**抗碰撞 Hash**，则 $\mathrm{MAC}'_k(m)=\mathrm{MAC}_k(H(m))$ 是**变长 MAC**；
 - 安全性证明要点：能伪造 $\mathrm{MAC}'$ ⇒ 要么找到 $H$ 的碰撞，要么伪造定长 $\mathrm{MAC}_k$ 的标签。
 
-> 教材对照：§6.3.1 Hash-and-MAC（教材给的正是“**抗碰撞 Hash + 定长 MAC**”这条路线）。
+> 说明：教材**没有**“Hash-and-MAC”这一小节；教材 §4.7 讲的是 NMAC/HMAC（基于 MD 结构与 PRF 的专用构造）。下面这条“抗碰撞 Hash + 定长 MAC”按课程口径整理，属于**课程补充**，不能标成教材原文。教材中与它最接近的思想是 NMAC/HMAC，但证明与假设不同。
 
 ### 4.1 Hash-and-MAC 的三个算法与安全性证明
 
@@ -151,9 +151,9 @@ Vrfy'((k,s), m, t)：1. h = H^s(m)
 - 定长 MAC → 变长 MAC 的两种方法（ECBC-MAC 与 Hash 组合）——见 [`06_消息认证码MAC.md`](06_消息认证码MAC.md#6-具体的-mac-构造)。
 - 分组密码与工作模式（CBC 等）——见 [`05_伪随机函数与伪随机置换.md`](05_伪随机函数与伪随机置换.md#81-cbc-模式的公式)。
 - 考试范围里与 Hash 相关的条目——见 [`13_考试范围与复习要点.md`](13_考试范围与复习要点.md)。
-- 教材：§6.1（定义：抗碰撞与更弱的安全目标）、§6.2（MD 结构）、§6.3（Hash-and-MAC / HMAC）。
+- 教材：§4.6（Definition 4.9–4.10、生日攻击、Construction 4.11 / Theorem 4.12）、§4.7（NMAC/HMAC）。
 
 ## 9. 来源与延伸阅读
 
 - 来源：用户提供的课程资料（速查表提纲 ＋ 课程笔记 Lec1–Lec13）；清单见 `密码学基础/readme.md`。原始资料（`数据安全与密码学基础.zip` 及其中的附件）均为**只读引用**，未改动。
-- 参考书：Katz & Lindell, *Introduction to Modern Cryptography*（Revised 3rd ed.）**§6.1–§6.3**（§6.1.1 抗碰撞 / §6.1.2 更弱的目标 / §6.2 Merkle–Damgård / §6.3 Hash-and-MAC、HMAC）。
+- 参考书：Katz & Lindell, *Introduction to Modern Cryptography*（2007 年第 1 版）**§4.6–§4.7**。

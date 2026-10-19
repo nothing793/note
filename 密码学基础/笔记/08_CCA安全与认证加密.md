@@ -3,7 +3,7 @@
 > 来源：用户提供的课程资料（一份速查表提纲 ＋ 一份按课次记录的课程笔记 Lec1–Lec13；详见 [`00_索引.md`](00_索引.md) §1）
 > 整理日期：2026-09-21
 > 说明：本文由 AI 依据上述资料整理；课程笔记在“安全性证明”一节自己写了「看不懂，略」，本笔记**同样不补**证明。
-> 教材对照：Katz & Lindell（Revised 3rd ed.）**§5.1** Chosen-Ciphertext Attacks and CCA-Security（§5.1.1 Padding-Oracle Attacks / §5.1.2 Defining CCA-Security）、**§5.2** Authenticated Encryption（§5.2.1 Defining Authenticated Encryption / §5.2.2 CCA Security vs. Authenticated Encryption）、**§5.3** Authenticated Encryption Schemes（§5.3.1 Generic Constructions / §5.3.2 Standardized Schemes）、**§5.4** Secure Communication Sessions。
+> 教材对照：Katz & Lindell（2007 年第 1 版）**§3.7** Security Against Chosen-Ciphertext Attacks（Definition 3.31）、**§4.8** \*Achieving Chosen-Ciphertext Secure Encryption（Construction 4.17 / Theorem 4.18，要求 MAC 具有 unique tags）、**§4.9** \*Obtaining Privacy and Message Authentication（Definition 4.19 secure combination；Theorem 4.20 encrypt-then-authenticate）。教材不把“认证加密”单列为第 5 章；本笔记标题中的 AE 与课程的“理想预言机模型”属于课程补充，已逐处标明。
 
 ## 0. 本节速览
 
@@ -25,14 +25,23 @@
 
 ## 2. CCA 安全（chosen-ciphertext attack security）
 
-- 敌手**可访问加密预言机和解密预言机**；
-- **挑战阶段之后，敌手不能把挑战密文提交给解密预言机**（否则游戏被平凡攻破）；
-- 安全性定义为：**敌手无法区分两个等长明文的加密结果**。
+教材 **§3.7 / Definition 3.31** 的实验 $\mathrm{PrivK}^{\mathrm{cca}}_{\mathcal{A},\Pi}(n)$：
+
+1. 运行 $\mathrm{Gen}(1^n)$ 生成密钥 $k$；
+2. 敌手 $\mathcal{A}$ 得到 $1^n$，并可访问加密预言机 $\mathrm{Enc}_k(\cdot)$ 与解密预言机 $\mathrm{Dec}_k(\cdot)$，输出一对**等长**消息 $m_0,m_1$；
+3. 随机取 $b\leftarrow\{0,1\}$，把挑战密文 $c\leftarrow\mathrm{Enc}_k(m_b)$ 交给 $\mathcal{A}$；
+4. $\mathcal{A}$ 继续访问两个预言机，但**不得把挑战密文 $c$ 本身提交给解密预言机**；最后输出 $b'$；
+5. 若 $b'=b$ 则实验输出 1。安全性要求
+
+$$\Pr\bigl[\mathrm{PrivK}^{\mathrm{cca}}_{\mathcal{A},\Pi}(n)=1\bigr]\le\frac12+\mathrm{negl}(n).$$
+
+- 限制“不能解密挑战密文”是必要的；否则敌手直接把 $c$ 解密就赢了。
+- 教材指出：此前学过的方案（包括 CPA 安全的 Construction 3.25）都**不是** CCA 安全的；把密文翻转一位再问解密，就能看出明文变化。
 
 ![CCA 安全的配图（截图引自课程笔记）](assets/fig_l9_cca.png)
 
 > 课程笔记的定位：CCA 是**一种很强的安全定义**，能抵御现实中的主动攻击（**如 Padding Oracle Attack**，见 [`06` §6.6](06_消息认证码MAC.md#66-padding-oracle-attack为什么必须机密性--完整性一起要)）。
-> 教材对照：§5.1.2 Defining CCA-Security。
+> 教材对照：§3.7 Definition 3.31。
 
 ## 3. CCA 安全 ↔ 不可延展性（non-malleability）
 
@@ -51,18 +60,21 @@ AE 方案要**同时满足**：
 1. **保密性**：**CCA 安全**；
 2. **完整性**：敌手**无法伪造一个有效的密文**（除非它来自加密预言机）。
 
-课程笔记给出的关系：
+教材 **§4.9 / Definition 4.19** 把它写成“**安全的加密 + 认证组合**”：组合算法 $(Gen',EncMac',Dec',Vrfy')$ 同时满足
 
-> **AE 安全 ⇒ CCA 安全，但反之不一定成立。**
+- $(Gen',EncMac',Dec')$ 是 **CCA 安全**的加密方案；
+- $(Gen',EncMac',Vrfy')$ 是 **EUF-CMA 安全**的 MAC。
 
-> 教材对照：§5.2.2 CCA Security vs. Authenticated Encryption（教材同样把二者区分开）。
+> 课程笔记的关系“AE ⇒ CCA，但 CCA ⇏ AE”与这个定义一致：CCA 只保证保密性，不保证“不能伪造新密文”。注意“AE”是课程/工程界的叫法，教材第 1 版用的是“secure combination of encryption and authentication”。
 
-### 4.2 等价定义：理想预言机模型（真实世界 vs 理想世界）
+### 4.2 等价定义：理想预言机模型（课程补充；教材未采用）
 
 | | 真实世界（$b=0$） | 理想世界（$b=1$） |
 |---|---|---|
 | 加密预言机 | $\mathrm{Enc}_k(m)$ → **真实加密** | $\mathrm{Enc}^0_k(m)$ → **总是加密等长的零串** |
 | 解密预言机 | $\mathrm{Dec}_k(c)$ → **真实解密** | $\mathrm{Dec}_\perp(c)$ → **总是返回错误 $\perp$** |
+
+> 下面这个“真实世界 vs 理想世界”的等价定义来自课程，**教材第 1 版没有采用**；教材用的是上方 Definition 4.19 的“CCA + EUF-CMA”组合定义。保留它是因为它能直观说明“保密 + 完整”。
 
 若敌手**无法区分这两个世界**，则方案是 AE 安全的。课程笔记对这种定义“强大之处”的两点解释：
 
@@ -86,9 +98,11 @@ AE 方案要**同时满足**：
 
 ### 5.1 安全性证明与两条附加要求
 
-- 课程笔记把安全性证明的要点写为：**证明 encrypt-then-authenticate 构造满足 AE 安全**；**关键在于敌手无法伪造有效的 MAC**，因此**无法构造有效的篡改密文**。
-- 证明细节课程笔记原文注明「**看不懂，略**」⇒ **本笔记不补**（需要时看教材 §5.3.1）。
-- **密钥独立性**：**加密密钥和认证密钥必须独立**，否则**可能破坏安全性**。
+- **教材 Theorem 4.20（encrypt-then-authenticate）**：若底层加密是 CPA 安全、底层 MAC 是 EUF-CMA 安全，则“先加密、再对密文做 MAC”的组合同时满足 CCA 安全与 EUF-CMA。
+- **教材 Theorem 4.18（§4.8 的加强版）**：若 MAC 还满足 **unique tags**（每个 $(k,m)$ 只有唯一合法标签），则 Construction 4.17 直接给出 CCA 安全的加密方案。unique tags 的作用是：敌手若提交一个“新密文”并通过验证，就必然伪造了一个新标签；否则它可能只是改了同一密文的另一种合法标签。
+- 证明思路（教材 §4.8）：先证明敌手对解密预言机的**新有效查询**概率可忽略（否则归约为 MAC 伪造）；于是解密预言机实际无用，CCA 安全归约为底层 CPA 安全。
+- **密钥独立性**：教材的 Construction 4.17 用两个独立密钥 $k_1,k_2$；若复用同一密钥，安全性证明不成立，实际中也可能被攻击。
+- 课程笔记说“证明看不懂，略”；本笔记按教材给出上述骨架，不展开完整概率计算。
 
 ## 6. 关键公式与记号汇总
 
@@ -97,7 +111,7 @@ AE 方案要**同时满足**：
 | CCA 游戏 | 加密预言机 + 解密预言机，**挑战密文不得提交解密** | [§2](#2-cca-安全chosen-ciphertext-attack-security) |
 | CCA ⇒ 不可延展 | 改密文后，明文与原明文语义无关 | [§3](#3-cca-安全--不可延展性non-malleability) |
 | AE = 保密 + 完整 | CCA 安全 + 不可伪造；AE ⇒ CCA | [§4.1](#41-定义) |
-| 理想世界 | $\mathrm{Enc}^0_k(m)$ 加密零串；$\mathrm{Dec}_\perp(c)$ 恒返回 $\perp$ | [§4.2](#42-等价定义理想预言机模型真实世界-vs-理想世界) |
+| 理想世界 | $\mathrm{Enc}^0_k(m)$ 加密零串；$\mathrm{Dec}_\perp(c)$ 恒返回 $\perp$ | [§4.2](#42-等价定义理想预言机模型课程补充教材未采用) |
 | 推荐构造 | encrypt-then-authenticate：$(c,t)=(\\mathrm{Enc}(k_E,m),\ \mathrm{Mac}(k_M,c))$ | [§5](#5-构造-ae-的三种尝试) |
 
 ## 7. 听课重点与易混点
@@ -113,7 +127,7 @@ AE 方案要**同时满足**：
 - [ ] CCA 敌手比 CPA 敌手多拿到的能力是什么？游戏里有什么限制？（[§1](#1-从被动敌手到主动敌手)、[§2](#2-cca-安全chosen-ciphertext-attack-security)）
 - [ ] 什么是不可延展性？用 $c'=c\oplus1$ 的例子解释。（[§3](#3-cca-安全--不可延展性non-malleability)）
 - [ ] 写出 AE 的两条要求，并说明 AE 与 CCA 的包含关系。（[§4.1](#41-定义)）
-- [ ] 复述理想预言机模型的真实世界 / 理想世界各是什么。（[§4.2](#42-等价定义理想预言机模型真实世界-vs-理想世界)）
+- [ ] 复述理想预言机模型的真实世界 / 理想世界各是什么。（[§4.2](#42-等价定义理想预言机模型课程补充教材未采用)）
 - [ ] 三种构造各自的问题/优点是什么？为什么 encrypt-then-authenticate 被推荐？（[§5](#5-构造-ae-的三种尝试)）
 - [ ] 为什么加密密钥与认证密钥必须独立？（[§5.1](#51-安全性证明与两条附加要求)）
 
@@ -122,9 +136,9 @@ AE 方案要**同时满足**：
 - 填充预言攻击与“为什么要机密性 + 完整性”——见 [`06_消息认证码MAC.md`](06_消息认证码MAC.md#66-padding-oracle-attack为什么必须机密性--完整性一起要)。
 - 更强安全性的阶梯（EAV → CPA → CCA）与考试大纲第 3 条——见 [`13_考试范围与复习要点.md`](13_考试范围与复习要点.md)。
 - 公钥加密里的 IND-CPA 与“EAV 与 IND-CPA 等价”——见 [`11_公钥加密与ElGamal.md`](11_公钥加密与ElGamal.md)。
-- 教材：§5.1（CCA 与填充预言攻击）、§5.2（AE 的定义与 CCA 的关系）、§5.3（通用构造与标准化方案）。
+- 教材：§3.7（CCA 定义）、§4.8（CPA + MAC ⇒ CCA）、§4.9（三种组合方式与 encrypt-then-authenticate）。
 
 ## 10. 来源与延伸阅读
 
 - 来源：用户提供的课程资料（速查表提纲 ＋ 课程笔记 Lec1–Lec13）；清单见 `密码学基础/readme.md`。原始资料（`数据安全与密码学基础.zip` 及其中的附件）均为**只读引用**，未改动。
-- 参考书：Katz & Lindell, *Introduction to Modern Cryptography*（Revised 3rd ed.）**§5.1–§5.3**（CCA 的定义与 Padding Oracle、认证加密、构造与标准方案）。
+- 参考书：Katz & Lindell, *Introduction to Modern Cryptography*（2007 年第 1 版）**§3.7**、**§4.8–§4.9**。
