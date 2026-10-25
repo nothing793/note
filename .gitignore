@@ -62,3 +62,7 @@ AGENTS.md
 #       不入库会让 check_site.py 报「站点里缺少文件 assets/xxx.py」。
 !/ADS/assets/*.py
 !/ADS/笔记/assets/*.py
+
+# 11) 原始截图重复件：sys2 旧版幻灯片已有整理后的 fig_s*.png，
+#     中文名原图仅保留在本地，不再追踪（2026-10-25）
+/sys2/笔记/assets/幻灯片*.PNG
