@@ -1,6 +1,6 @@
 # ADS（高级数据结构与算法分析）· 笔记（`ADS/笔记/`）
 
-浙江大学「高级数据结构和算法分析」（主讲：陈昊）课前笔记的 **Markdown 原件**与配图。
+浙江大学「高级数据结构和算法分析」（主讲：陈昊）课前 / 复习笔记的 **Markdown 原件**与配图。
 本目录是笔记的「家」：改内容改这里的文件；站点构建时由 `网站/prepare.py` 复制到 `网站/.docs/`（**不要**直接改生成副本）。
 
 ## 目录内容
@@ -15,7 +15,7 @@
 | `05_ADS04_左式堆与斜堆.md` | 左式堆（leftist heap）与斜堆（skew heap） |
 | `06_ADS05_二项队列.md` | 二项队列（binomial queue） |
 | `07_ADS06_回溯算法.md` | 回溯算法（backtracking，含 $\alpha$-$\beta$ 剪枝（alpha-beta pruning））；**复习笔记**，含三个例子的完整复盘与自绘搜索树 |
-| `08_ADS07_分治法与递归式.md` | 分治法（divide and conquer）与递归式（recurrence）求解 |
+| `08_ADS07_分治法与递归式.md` | 分治法（divide and conquer）与递归式（recurrence）：模板、最近点对与 7 点引理、代入法 / 递归树 / 主定理、变量代换；**复习笔记** |
 | `09_ADS08_动态规划.md` | 动态规划（dynamic programming） |
 | `10_ADS09_贪心算法.md` | 贪心算法（greedy algorithm）与 Huffman 编码（Huffman coding） |
 | `11_ADS10_NP完全性.md` | NP 完全性（NP-completeness，归约（reduction）） |
@@ -34,7 +34,7 @@
 - `fig_*.png`：配图。既有**讲义原页导出**的图，也有**自绘**图（如 `fig_leftist_*`、`fig_skew_*` 由脚本生成）；
   自绘图在图注中均标明「自绘」；
 - `make_*.py`：生成自绘配图的脚本（`make_avl_figs.py`、`make_splay_figs.py`、`make_amort_figs.py`、
-  `make_leftist_skew_figs.py`、`make_ads02_figs.py`、`make_ads_notes_figs.py`、`make_ads05_figs.py`、`make_ads06_figs.py`）——**入库**（`.gitignore` §10 白名单放行），
+  `make_leftist_skew_figs.py`、`make_ads02_figs.py`、`make_ads_notes_figs.py`、`make_ads05_figs.py`、`make_ads06_figs.py`、`make_ads07_figs.py`）——**入库**（`.gitignore` §10 白名单放行），
   笔记正文直接链接这些脚本，便于复现；
 - 图一律用**相对路径**引用（`assets/fig_*.png`），不写绝对路径、不内嵌 base64。
 
