@@ -24,7 +24,7 @@ python 网站/build.py --no-check        # 只构建，不跑自检
 
 | 路径 | 说明 |
 |---|---|
-| `mkdocs.yml` | 站点配置：主题、Markdown 扩展、`nav`（列出全部 40 篇笔记） |
+| `mkdocs.yml` | 站点配置：主题、Markdown 扩展、`nav`（列出全部 43 个页面） |
 | `gh_slug.py` | **标题锚点算法**：复刻 GitHub 规则，见下文 §3.1 |
 | `prepare.py` | 把笔记与配图汇集到 `.docs/`（生成目录，见 §3.2 为何用点号开头） |
 | `build.py` | 构建入口（prepare → mkdocs build → 自检） |
@@ -68,7 +68,7 @@ MkDocs 默认的 slug 规则与之不同（会把连续空格 / 连字符并成�
 - 不发布 `ADS/笔记/tasks.md`（个人待办草稿）与各 `笔记/README.md`（目录说明，仓库内用）——
   两者都在 `prepare.py` 的 `SKIP_FILES` 里：MkDocs 会把 `README.md` 当作所在目录的 `index.md`，
   与 `check_site.py` 的「md → 同名 html」核对冲突，所以 `笔记/README.md` 只留在仓库里，不进站点；
-- 不发布讲义原件（`ADS/Materials/`、`sys2/*.pdf`）与其他课程目录。
+- 不发布讲义原件（`ADS/Materials/`、`sys2/lec/*.pdf`、`sys2/lec/lec05.pptx`）与其他课程目录。
 
 注意：上列 `.py`（`ADS/笔记/assets/*.py`）与两个自检脚本 `ADS/assets/check_md_anchors.py`、
 `ADS/assets/check_md_links.py` 必须在仓库里（`.gitignore` §10 手工放行）。`check_site.py`
@@ -86,8 +86,8 @@ MkDocs 默认的 slug 规则与之不同（会把连续空格 / 连字符并成�
    且没有残留未改写的 `.md`；
 4. **站点资源**：MathJax 等 `extra_javascript` 是否存在。
 
-完整报告写入 `网站/.cache/check_report.txt`。当前基线：39 个页面、500 条跨文件链接、
-795 条同页锚点、141 条图片/附件、875 个标题锚点，全部通过（2026-10-20：加入 sys2 第 5、6 讲后重跑）。
+完整报告写入 `网站/.cache/check_report.txt`。当前基线：43 个页面、604 条跨文件链接、
+821 条同页锚点、164 条图片/附件、973 个标题锚点，全部通过（2026-10-30：加入 sys2 OS 第 0、1 讲后重跑）。
 
 ## 5. 部署
 
