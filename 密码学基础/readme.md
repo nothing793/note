@@ -1,3 +1,41 @@
-# 资料来源
-https://zzw4257.cn/posts/is-pro/%E5%AF%86%E7%A0%81%E5%AD%A6/
-https://my.feishu.cn/wiki/DIgiwoEhPiC5JTkHEnPcW7wXnmc
+# 密码学基础
+
+浙江大学「密码学基础」课程的学习资料。主要内容是课堂记录、复习笔记和教材对照。
+
+## 目录
+
+| 路径 | 内容 |
+|---|---|
+| `class_documentation/` | 课堂记录的整理稿、完整转写，以及按日期拆分的 6 次课原件 |
+| `笔记/` | 按主题编排的复习笔记，入口是 `笔记/00_索引.md` |
+| `Introduction_to_Modern_Cryptography.pdf` | Katz & Lindell, *Introduction to Modern Cryptography*（2007 年第 1 版），只读引用 |
+| `tasks.md` | 当前整理任务清单 |
+| `readme.md` | 本文件 |
+
+## 资料来源
+
+1. **课堂记录（主要来源）**：`class_documentation/class_documentation.md`。它按 6 次课整理了课程主线、术语和例子；需要查原话时看 `class_documentation/origin/` 中对应日期的拆分文件，完整原件仍是 `class_documentation/origin.md`。
+2. **教材（核对用）**：Katz & Lindell, *Introduction to Modern Cryptography*, Chapman & Hall/CRC, 2007 年第 1 版。课堂记录没有写清的定义、定理编号或构造，按这本教材核对；教材与课堂记录冲突时，笔记中并列说明，不擅自判定。
+3. **不再使用的外部网页**：早期笔记参考过两个网页，现已不作为资料来源，相关链接已从笔记来源说明中移除。
+
+教材 PDF 是只读文件：不修改、不移动、不重命名。课堂转写 `origin.md` 也保持原样；需要修订内容时，先改整理稿，再按日期重新拆分。
+
+## 笔记现状
+
+- `笔记/01`–`04` 已按 `class_documentation.md` 重写，分别对应导论、完美保密、OWF/PRG、多消息与 IND-CPA。
+- `笔记/05`–`14` 仍是早前整理的版本，保留了当时的教材对照和课程补充。后续继续重写时，以 `class_documentation/` 和教材为准。
+- 每篇笔记的结构大致是：速览 → 定义与直觉 → 构造与证明 → 公式汇总 → 易混点 → 复习清单 → 关联知识点 → 来源。
+
+## 使用方式
+
+1. 先读 `笔记/00_索引.md`，按主题找对应篇目。
+2. 复习某个概念时，先看整理稿中的定义和公式，再回到 `class_documentation/origin/` 查老师的原话和例子。
+3. 需要核对教材编号时，查 PDF 对应章节；笔记里的「教材对照」只用于定位，不替代教材原文。
+4. 修改笔记后，同步检查 `00_索引.md` 的链接和描述；新增、改名或调整标题时，也要更新索引。
+
+## 维护约定
+
+- 课堂记录、教材 PDF 和原始转写不改写；整理稿可以修订，但修订后要保证与拆分文件、笔记的说法一致。
+- 数学公式用 LaTeX：行内 `$...$`，块级 `$$...$$`。
+- 图片放在 `笔记/assets/`，用相对路径引用。
+- 不确定的内容标「待确认」，不凭印象补写。

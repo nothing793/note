@@ -1,178 +1,255 @@
 # 密码学基础 · 04：多消息安全与 IND-CPA（Multiple-Message Security & Chosen-Plaintext Attacks）
 
-> 来源：用户提供的课程资料（一份速查表提纲 ＋ 一份按课次记录的课程笔记 Lec1–Lec13；详见 [`00_索引.md`](00_索引.md) §1）
-> 整理日期：2026-09-21
-> 说明：本文由 AI 依据上述资料整理；资料用箭头图（网页上为公式图）描述游戏流程，本笔记改写成步骤化叙述，**资料写得含糊的地方保留原文并标「待确认」**。
-> 教材对照：Katz & Lindell（2007 年第 1 版）**§3.4.3** Stream Ciphers and Multiple Encryptions（多消息 EAV）、**§3.5** Security under Chosen-Plaintext Attacks（Definition 3.22、Claim 3.23：单次 CPA ⇒ 多次 CPA）、**§3.6.2** CPA-Secure Encryption Schemes from Pseudorandom Functions（Construction 3.25 / Theorem 3.26）。教材不使用“CPA2”这个名字；本笔记保留课程叫法，并注明它对应教材的“CPA security for multiple encryptions”。
+> 来源：`class_documentation/class_documentation.md` 的「10.19 PRG 构造加密、EAV 归约与 reuse 问题」与「10.26 IND-CPA、LR-CPA 与 hybrid argument」；原始转写见 `class_documentation/origin/2026-10-19_PRG构造加密与reuse问题.md` 和 `2026-10-26_IND-CPA与LR-CPA.md`。
+> 整理日期：2026-11-01
+> 说明：本节的主线是「EAV 只够一次加密 → 需要 reuse → 确定性加密不行 → IND-CPA → 用 LR-CPA 和 hybrid 证明 IND-CPA 包住多消息」。
+> 教材对照：Katz & Lindell（2007 年第 1 版）§3.4.3、§3.5、§3.6.2。
 
 ## 0. 本节速览
 
 | 小节 | 主题 | 一句话摘要 |
 |---|---|---|
-| §1 | 动机 | 缩短密钥的流密码仍然只能“一次一密”：异或可逆性让对手能构造冲撞、拿额外信息。 |
-| §2 | 多消息安全 | 进入“消息阵列”的游戏；**教材 Construction 3.25** 用 $\mathrm{Enc}_k(m)=\langle r,F_k(r)\oplus m\rangle$（资料里的 $G(sk\Vert r)$ 写法标为**课程补充**）。 |
-| §3 | IND-CPA 的四个阶段 | 初始化 → Phase1（可反复问）→ Challenge（只此一次二择一）→ Phase2，最后猜 $b'$。 |
-| §4 | IND-CPA 与多消息安全的关系 | CPA2 ⇒ 多消息安全；CPA2 ⇒ CPA 显然；CPA ⇒ CPA2 用 hybrid argument（“搭长桥”）。 |
+| §1 | EAV 的局限 | PRG 加密继承 OTP 的「一次一密」，同一密钥只能用一次。 |
+| §2 | reuse 与随机化 | 想复用密钥，确定性加密立刻失败；直接加随机数又会泄露种子。 |
+| §3 | IND-CPA | 给攻击者加密预言机，挑战只做一次二选一。 |
+| §4 | 多消息与 LR-CPA | LR-CPA 动态多轮挑战；用 hybrid 把一次挑战扩成多次。 |
 
 ---
 
 ## 1. 动机：为什么“一次一密”不够
 
-- 资料指出：之前构造的**流密码**虽然把 $sk$ 缩短了，但**还是只能一次一密**——因为异或可逆，密钥流复用后对手可以**构造冲撞、获取额外信息**。
-- 于是考虑下面这个游戏：挑战者把 **$\mathrm{Enc}(M_{b,*})$ 的一组密文**交给 $\mathcal{A}$，即**一次给一整列消息的加密结果**，最后由 $\mathcal{A}$ 猜 $b'$。
+上一节的构造是
 
-> 待确认：资料此处的游戏箭头图渲染错乱（原文只剩 `chA chA ch ... A` 这样的残片），上面的叙述是按上下文（“当我们提供来选择的消息为阵列时，情况有所不同”一句）整理出来的；严格的游戏定义（$\mathrm{PrivK}^{\mathrm{mult}}_{\mathcal{A},\Pi}(n)$）资料只提了名字，见教材 §3.4.3。
+$$\mathrm{Enc}(sk,m)=m\oplus G(sk).$$
 
-## 2. 一种多消息安全的方案（教材 Construction 3.25）
+它只改动了 OTP 的一处：把真随机长密钥换成了 PRG 输出。正确性和短密钥都很好，但它也继承了 OTP 的「一次一密」属性：EAV 定义里，攻击者只拿到一条挑战密文。
 
-教材构造用的是 **PRF**（不是 PRG 直接拼接）：
+现实使用不是这样。我们希望密钥固定后可以反复使用：
 
-$$\mathrm{Gen}(1^n)\to k\leftarrow\{0,1\}^n;\qquad
-\mathrm{Enc}_k(m):\ r\leftarrow\{0,1\}^n,\ c:=\langle r,\ F_k(r)\oplus m\rangle;\qquad
-\mathrm{Dec}_k(\langle r,s\rangle):=F_k(r)\oplus s.$$
+- 同一个 $sk$ 加密第一条、第二条、……第 $q$ 条消息；
+- 密钥长度最好与消息条数无关，不能加密 10 GB 数据还要保存 1 GB 密钥；
+- 这正是 **reuse（密钥复用）** 的需求。
 
-- **随机化**：每次加密重新均匀取 $r$；同一条明文两次加密会得到不同密文。
-- **为什么安全**：对 PPT 敌手，$F_k(r)$ 看起来像**真随机的一次性密钥**；只要 $r$ 没有与之前的加密重复（概率可忽略），这就是一次一密式的加密。教材 Theorem 3.26 给出证明。
-- **教材的代价**：密文长度至少是明文的两倍（每个 $n$ 位块都要带一个 $n$ 位随机串）；教材 §3.6.4 的 CBC/OFB/CTR 模式用来降低这一开销。
+EAV 只覆盖「一次加密」，所以它不够。下一步要把安全定义升级到「同一密钥下的多条消息」。
 
-> 课程资料里的 $\mathrm{Enc}(sk,m,r)=(G(sk\Vert r)\oplus m,r)$ 是把“$F_k(r)$”换成“以 $sk\Vert r$ 为种子的 PRG 输出”。**教材没有这个构造**；用 PRG 直接替换 PRF 一般不能自动保证多消息/CPA 安全（不同 $r$ 对应的 PRG 输出未必互相独立）。考试与答题请以教材的 PRF 构造（Construction 3.25）为准。
+---
+
+## 2. reuse 的定义与随机化尝试
+
+### 2.1 reuse 的定义
+
+对任意两条消息序列
+
+$$M0_1,\ldots,M0_q,\qquad M1_1,\ldots,M1_q,$$
+
+在**同一个** $sk$ 下分别加密，得到两个联合分布：
+
+$$\bigl(sk,\ \mathrm{Enc}(sk,M0_1),\ldots,\mathrm{Enc}(sk,M0_q)\bigr)
+\quad\text{与}\quad
+\bigl(sk,\ \mathrm{Enc}(sk,M1_1),\ldots,\mathrm{Enc}(sk,M1_q)\bigr).$$
+
+要求这两个联合分布计算不可区分。注意这里的关键词：
+
+- **联合分布**，不是每条消息单独看；
+- **同一把 $sk$**，不是每次重新采样；
+- 消息条数 $q$ 是多项式。
+
+对应的游戏版本：挑战者生成 $sk$；攻击者一次给出两个消息序列；挑战者投 $b$，用同一把 $sk$ 加密对应序列；攻击者猜 $b'$。
+
+### 2.2 确定性加密为什么实现不了 reuse
+
+如果加密是确定性的，同一条消息每次加密结果完全相同。攻击者可以这样区分：
+
+- 序列 0 的前两条消息相同：$M0_1=M0_2$；
+- 序列 1 的前两条消息不同：$M1_1\ne M1_2$。
+
+拿到密文后，看前两条密文是否相同：相同就猜序列 0，不同就猜序列 1。攻击者不需要密钥，优势接近 1。
+
+结论：**确定性加密无法实现多消息安全**。这也是第一节课说「加密算法应优先随机化」的真正理由。
+
+### 2.3 直接加随机数为什么不行
+
+**尝试 1**：把随机数直接异或进密文：
+
+$$c=m\oplus G(sk)\oplus r.$$
+
+解密时只有 $sk$ 和 $c$，没有 $r$，无法还原 $m$。这条路不通。
+
+**尝试 2**：把 $r$ 放进密文，让解密方拿到。比如密文包含 $r$ 和 $m\oplus G(sk)$ 之类的内容。看似可行，但问题在于：
+
+- PRG 的安全性只保证「完全不知道种子时，输出看起来随机」；
+- 现在攻击者看到了 $r$，相当于泄露了种子的一部分信息；
+- 一旦种子部分泄露，PRG 不再保证剩余部分还伪随机。
+
+课堂给了一个反例式的构造：令
+
+$$G'(sk\Vert r)=r\Vert G(sk).$$
+
+$G'$ 可以是 PRG，但它的前 $n$ 位直接就是 $r$，完全泄露。这说明「泄露一部分后仍伪随机」不是 PRG 能保证的性质。
+
+从归约角度看，问题也很清楚：PRG 游戏只给归约器一个样本，不会给 $r$；归约器无法模拟「攻击者看到 $r$」的环境，义务对不上。
+
+所以需要更强的工具：**即使一部分信息泄露，剩下的 mask 仍然伪随机**。下一次课升级到 PRF 等工具，才能构造真正的多消息安全方案。
+
+> 教材对照：教材 §3.6.2 的 Construction 3.25 用 PRF $F_k$ 构造
+> $$\mathrm{Enc}_k(m)=\langle r,\ F_k(r)\oplus m\rangle,$$
+> 其中 $r\leftarrow\{0,1\}^n$ 每条消息重新选取。课堂记录把具体构造留到下一阶段；这里只说明方向和教材写法，不把 PRF 当成已讲内容。
+
+---
 
 ## 3. IND-CPA：选择明文攻击下的不可区分性
 
-资料标题：**IND-CPA：*indistinguishabable* *chosen-plaintext-attacks***。游戏分四步：
+### 3.1 五个阶段
 
-| 阶段 | 谁做什么 | 资料写法 |
-|---|---|---|
-| **Initial Phase** | 挑战者 ch 把 $(\mathrm{Gen},\mathrm{Enc},\mathrm{Dec})$ 交给 $\mathcal{A}$ | $\mathrm{ch}\xrightarrow{\mathrm{Gen},\mathrm{Enc},\mathrm{Dec}}\mathcal{A}$ |
-| **Phase 1** | 多轮：$\mathcal{A}$ 发 $m_i$，ch 回 $\mathrm{Enc}_{sk}(m_i)$ | $\mathrm{ch}\underset{\mathrm{Enc}_{sk}(m_i)}{\overset{m_i}{\leftrightarrow}}\mathcal{A}$ |
-| **Challenge Phase** | **只有一次**、二择一：$\mathcal{A}$ 给 $m_1^{*},m_2^{*}$，ch 回 $\mathrm{Enc}_{sk}(m_b^{*})$ | $\mathrm{ch}\underset{\mathrm{Enc}_{sk}(m_b^{*})}{\overset{m_1^{*},m_2^{*}}{\leftrightarrow}}\mathcal{A}$ |
-| **Phase 2** | 继续像 Phase 1 那样问 | $\mathrm{ch}\underset{\mathrm{Enc}_{sk}(m_i)}{\overset{m_i}{\leftrightarrow}}\mathcal{A}$ |
-| 结束 | $\mathcal{A}$ 输出猜测 $b'$ | — |
+IND-CPA 给攻击者增加了「选择明文」的能力。游戏分五个阶段：
 
-> 资料在 Challenge 阶段特意加注：“**注意这种二择一的只有一次**”。
+| 阶段 | 谁做什么 |
+|---|---|
+| 1. 初始化 | 挑战者把公开参数（安全参数、算法等）交给 $\mathcal{A}$ |
+| 2. Phase 1 | $\mathcal{A}$ 可以任意询问明文的密文，消息自选；挑战者逐条回答 |
+| 3. Challenge | $\mathcal{A}$ 选两条等长消息 $M_0^*,M_1^*$；挑战者投 $b$，返回 $\mathrm{Enc}(sk,M_b^*)$ |
+| 4. Phase 2 | $\mathcal{A}$ 看完挑战密文后，继续询问任意明文的密文 |
+| 5. Guess | $\mathcal{A}$ 输出 $b'$，优势为 $\lvert\Pr[b'=b]-1/2\rvert$ |
+
+和 EAV 相比，IND-CPA 只多了 Phase 1 和 Phase 2 两个加密预言机。挑战仍然只有一次二选一。
+
+### 3.2 为什么允许攻击者选择明文
+
+最朴素的通信模型中，消息由 Alice 和 Bob 自己选，攻击者只能被动窃听。那攻击者凭什么要求加密他想看的内容？
+
+现实中的攻击者可以诱导用户加密特定消息。课堂用了中途岛战役的例子：
+
+- 美军截获日军密文，反复看到符号「AF」，但不知道 AF 指哪里；
+- 美军散布「中途岛缺少淡水」的假消息；
+- 日军随后发出「AF is short of water」，AF 的含义由此确定。
+
+攻击者通过投放假消息，让目标加密自己关心的内容。IND-CPA 把这个能力写进模型，并不过分。
+
+### 3.3 IND-CPA 的 high-level 作用
+
+IND-CPA 要求：即使加密同一条明文，不同随机数下的密文也必须看起来完全不同。
+
+原因很直接：攻击者可以在 Phase 1 询问某条消息的密文，然后在 Challenge 阶段把这条消息放进 $M_0^*$ 或 $M_1^*$。如果加密是确定性的，挑战密文和 Phase 1 得到的密文一模一样，攻击者立刻知道挑战的是哪条消息。IND-CPA 要防住这种攻击，就必须让同一明文的两次加密结果不同。
+
+---
 
 ## 4. IND-CPA 与 Multi-Message Security 的关系
 
-### 4.1 课程叫法“CPA2”与教材的多次加密 CPA
+### 4.1 证明策略：找一个更强的 LR-CPA
 
-课程资料把“每一轮都可以提交一对消息”的强形式记作 **CPA2**；教材不使用这个名字，而是在 §3.5 末尾把它称为 **CPA security for multiple encryptions**，并用 **Claim 3.23** 说明：**单次挑战的 CPA 安全自动蕴含多次挑战的 CPA 安全**。因此“CPA2”与教材的单次挑战定义是等价的，只是表述更方便。
+直接证明「IND-CPA ⇒ 多消息安全」要处理很多条挑战，写起来容易乱。课堂换了一个思路：
 
-- **CPA2 ⇒ Multi-Msg Secure（显然）**：每次都可以问一对 $m_{i,0/1}$，然后得到 $\mathrm{Enc}(m_{i,b})$ 作为回答。
-- 也就是说，这个 CPA 里所有问题都形如
+1. 找一个与 IND-CPA 等价的新定义 **LR-CPA**；
+2. LR-CPA 显然比静态多消息安全更强；
+3. 于是 IND-CPA 也包住多消息安全。
 
-$$\mathrm{ch}\underset{\mathrm{Enc}_{sk}(m_{i,b}^{*})}{\overset{m_{i,1}^{*},m_{i,2}^{*}}{\leftrightarrow}}\mathcal{A}$$
+### 4.2 LR-CPA 的结构
 
-即**每一轮都是二择一**（而非“只有 Challenge 阶段才二择一”）。
+LR-CPA（Left-or-Right CPA）是动态多轮游戏：
 
-### 4.2 三条归约
+1. 挑战者先选 $sk$ 和挑战比特 $b$；
+2. 攻击者发一对消息 $(M0_1,M1_1)$，挑战者返回 $\mathrm{Enc}(sk,M_{b,1})$；
+3. 攻击者看到密文后，再发 $(M0_2,M1_2)$，挑战者返回 $\mathrm{Enc}(sk,M_{b,2})$；
+4. …… 共 $q$ 轮，$q$ 是多项式；
+5. 攻击者输出 $b'$。
 
-| 方向 | 资料结论 | 资料理由 |
-|---|---|---|
-| CPA2 → Multi-Msg Secure | 成立 | “显然”：每轮二择一即可模拟多消息加密 |
-| CPA2 → CPA | 成立 | “直接将二择一的问变成确定问，这个 reduce 是显然的” |
-| CPA → CPA2 | 成立 | 需要**构造一个 hybrid argument**：“1 个 power 怎么扩展” |
+与静态多消息的区别：
 
-### 4.3 CPA → CPA2 的 hybrid 构造（“搭长桥”）
+- 静态多消息：攻击者必须一次性交完所有消息；
+- LR-CPA：攻击者看到上一轮密文后，可以调整下一轮的消息。
 
-资料用“Game set”的感性描述：
+所以 LR-CPA 的攻击者只强不弱，LR-CPA 安全 ⇒ 多消息安全。
 
-- **Game 0**：分别问 $(m_{10},m_{11}),\ldots,(m_{i0},m_{i1})$，**全部**回答 $b_i=0$；
-- **Game 1**：除了**第一个**，全部回答 $b_i=0$；
-- **Game 2**：除了**前两个**，全部回答 $b_i=0$；
+### 4.3 IND-CPA ⇒ LR-CPA 的归约
+
+**外部游戏**：归约器 $R$ 与 IND-CPA 挑战者玩。
+**内部游戏**：$R$ 扮演 LR-CPA 挑战者，与攻击者 $\mathcal{A}$ 玩。
+
+步骤：
+
+1. 公开参数直接转发给 $\mathcal{A}$；
+2. Phase 1 中 $\mathcal{A}$ 询问明文 $M$ 的密文时，$R$ 直接把 $M$ 交给外部 IND-CPA 的加密预言机；如果按 LR 写法，就是把 $(M,M)$ 同时作为左右消息。无论外部比特 $b$ 是什么，拿到的都是 $\mathrm{Enc}(sk,M)$，正好是 $\mathcal{A}$ 需要的；
+3. Challenge 阶段，$\mathcal{A}$ 发 $(M_0^*,M_1^*)$，$R$ 直接转给外部挑战者，拿回 $\mathrm{Enc}(sk,M_b^*)$；
+4. Phase 2 继续按同样方式回答加密询问；
+5. $\mathcal{A}$ 输出 $b'$，$R$ 直接输出 $b'$。
+
+如果 $\mathcal{A}$ 赢，$R$ 也赢，因为两者用的是同一个 $b$。优势没有损失。
+
+上面的写法处理了「一次挑战 + 两段预言机询问」。LR-CPA 有 $q$ 次挑战，单靠一次外部挑战不够，需要 hybrid argument。
+
+### 4.4 Hybrid argument：用一次挑战满足多次询问
+
+定义一串游戏，把「全答左边」逐步换成「全答右边」：
+
+- **Game Left**：所有轮都返回 $M0$ 的加密；
+- **Game 1**：第 1 轮返回 $M1$，其余返回 $M0$；
+- **Game 2**：前 2 轮返回 $M1$，其余返回 $M0$；
 - ……
+- **Game Right**：所有轮都返回 $M1$。
 
-资料的总结：
+相邻两个游戏只差一轮：
 
-> “一句话，你最后是**希望区分全 0 和全 1**”；上面 $\mathrm{Game}_i$ 与 $\mathrm{Game}_{i+1}$ 本质上就是**前缀的 1 多了一位**，能利用 CPA 来分界搭桥（**新引入的那一位就是 challenge phase**），最后就能搭一个长桥。
+$$\text{Game }i \quad\text{与}\quad \text{Game }i+1.$$
 
-也就是说：相邻两个 hybrid 游戏只在**第 $i+1$ 轮**的“回答 0 还是回答 1”上不同，于是这一位的差别正好能塞进一次 CPA 的 challenge，从而用 CPA 的安全性把 $\mathrm{Game}_i$ 与 $\mathrm{Game}_{i+1}$ 的区分优势压到可忽略，再把 $i=0\ldots t-1$ 的若干段“桥”串起来。
+这一轮的差别正好可以塞进一次 IND-CPA 挑战：第 $i+1$ 轮把真正的 $(M0_{i+1},M1_{i+1})$ 发给外部挑战者；其他轮在相邻两个 hybrid 里答案相同，于是把两侧设成同一个消息（已固定的那一侧）发过去，外部挑战者返回的就是该轮需要的密文。若 $\mathcal{A}$ 能区分这两个相邻游戏，就能攻破 IND-CPA。于是每一段的区分优势都可忽略。
 
-> 待确认：资料把 hybrid 游戏的描述写成“Game1：除第一个全答 0；Game2：除前两个全答 0”，按字面读是**从“第 1 个开始逐步把答案翻成 1”**的过程，但资料同时说“最后是希望区分全 0 和全 1”。两种读法的编号方式（“除前 $i$ 个”还是“前 $i$ 个”）资料未写死，此处照录资料文字，编号以教材 §3.5 的 Claim 3.23 与 §3.4.3 的 hybrid 为准。
+由 CI 的传递性，
 
-### 4.4 多信息下的窃听不可区分实验
+$$\text{Game Left}\ \approx_c\ \text{Game }1\ \approx_c\ \cdots\ \approx_c\ \text{Game Right}.$$
 
-- 课程笔记点明动机：**流密码继承了 OTP 的所有缺点**（一次一密），而现实中一次通信会有很多条消息，所以要定义**多消息安全（multi-message security）**；这一模型下的攻击者**仍然是窃听者模型**。
-- 实验描述（课程笔记原文）：
+这正是「左序列的联合分布与右序列的联合分布不可区分」，也就是多消息安全。LR-CPA 比静态多消息更强，所以 IND-CPA ⇒ LR-CPA ⇒ 多消息安全。
 
-  1. 敌手 $\mathcal{A}$ **选择两组消息列表** $M_0$ 与 $M_1$；
-  2. 实验随机选择一组（$M_0$ 或 $M_1$）加密，生成对应的**密文列表**；
-  3. 敌手根据看到的密文列表猜测加密的是哪一组；
-  4. 猜对（$b'=b$）则实验输出 1（敌手成功），否则输出 0。
+反过来，LR-CPA 安全 ⇒ IND-CPA 安全：IND-CPA 只是 LR-CPA 去掉 Phase 1/2 后的特例；LR-CPA 的挑战轮里把两条消息设为相同，就能模拟普通加密询问。因此二者等价。
 
-![多信息下的窃听不可区分实验（截图引自课程笔记）](assets/fig_l5_multimsg_exp.png)
+课堂把 hybrid 比作「分期付款」：金主一次只给一块钱，但我可以换很多个 hybrid 游戏，每个游戏只花一次挑战，最后拼成完整的证明。
 
-### 4.5 CPA 实验的五步描述与 CPA2 的直觉
-
-**（1）CPA 不可区分性实验 $\mathrm{PrivK}^{\mathrm{cpa}}_{\mathcal{A},\Pi}(n)$ 的五步**：
-
-1. 运行 $\mathrm{Gen}(1^n)$ 生成密钥 $k$；
-2. 敌手 $\mathcal{A}$ 得到 $1^n$ **以及加密预言机 $\mathrm{Enc}_k(\cdot)$ 的访问权**，输出一对**等长**消息 $m_0,m_1$；
-3. 均匀随机取 $b\in\{0,1\}$，计算 $c\leftarrow\mathrm{Enc}_k(m_b)$ 并交给 $\mathcal{A}$；
-4. $\mathcal{A}$ **继续**访问 $\mathrm{Enc}_k(\cdot)$，输出猜测 $b'$（课程笔记注明：**仅一次挑战机会**）；
-5. $b'=b$ 则输出 1（称 $\mathcal{A}$ 成功），否则输出 0。
-
-**（2）安全定义**：方案 $\Pi=(\mathrm{Gen},\mathrm{Enc},\mathrm{Dec})$ 是 CPA 安全的，如果对所有 PPT 敌手
-
-$$\Pr\bigl[\mathrm{PrivK}^{\mathrm{cpa}}_{\mathcal{A},\Pi}(n)=1\bigr]\le\frac12+\mathrm{negl}(n)$$
-
-课程笔记的解读：敌手的实际成功概率**不能显著高于 $1/2$**，超出部分必须不超过可忽略函数；随安全参数 $n$ 增大，优势**迅速衰减**。
-并且课程笔记再次强调包含关系：**满足 CPA 安全一定满足 EAV 安全**（EAV 的敌手没有用到预言机）。
-
-![CPA 的形式化定义（截图引自课程笔记）](assets/fig_l6_cpa_def.png)
-
-**（3）CPA2 的直觉（课程笔记用 LR 预言机解释）**：
-
-| | 标准 CPA | CPA2（多加密 CPA） |
-|---|---|---|
-| 预言机 | 加密预言机：可以问任意明文的密文（如 `"hello"`、`"world"`、`"0"`） | 直接与 **LR 预言机**交互：每次问一对 $(m_0,m_1)$，拿回其中一个的密文 |
-| 挑战次数 | **只有一次**真正的挑战（如 `("left","right")` → $c^*$） | **可以多轮**挑战（`("hello","world")`→$c_1$、`("foo","bar")`→$c_2$、`("left","right")`→$c_3$…） |
-| 秘密比特 | 单次挑战用 $b$ | 所有轮共用**同一个密钥 $k$ 与同一个比特 $b$**（$b=0$ 一直给左、$b=1$ 一直给右） |
-
-课程笔记的两步推理链：
-
-- **CPA2 ⇒ Multi-Msg Secure**：CPA2 的敌手具有“**根据上次密文选择下一次明文**”的能力，即选择明文是 **Adaptive（自适应）** 的；而 Multi-Msg 的敌手**只能一次性发完所有明文**。能自适应显然更强 ⇒ 链条第一步成立。
-- **CPA ⇒ CPA2**：直觉上，CPA 的 phase1/phase2 里“问单条消息、拿确定密文”可以用 CPA2 里“发**两条相同消息** $(m,m)$”等效（形式化地，能访问 LR 预言机的敌手可用 $LR_{k,b}(m,m)$ 模拟普通加密预言机）。但“一次挑战 → 无穷次挑战”仍是**由弱到强**的证明，于是再次用 **hybrid argument**：前 $i$ 个挑战用 $b=1$ 处理、其余用 $b=0$，相邻 Game 只差**一次 Challenge**（等价于一次 CPA），最终 $\mathrm{Game}_0$ 与 $\mathrm{Game}_q$ 分别对应“全 0”与“全 1”。
-
-![CPA ⇒ CPA2 的 hybrid 构造（截图引自课程笔记）](assets/fig_l6_cpa_hybrid.png)
-
-> 与 [§4.3](#43-cpa--cpa2-的-hybrid-构造搭长桥) 资料的“搭长桥”说法对照：资料用“Game $i$ / Game $i+1$ 前缀多一位 1”来描述，课程笔记用“前 $i$ 个挑战用 $b=1$、其余用 $b=0$”来描述——**两者是同一构造的两种说法**（资料此处“编号方向有歧义”的 [待确认](00_索引.md) 现在可以按课程笔记的口径读）。
+---
 
 ## 5. 关键公式与记号汇总
 
 | 记号/式 | 含义 | 出处 |
 |---|---|---|
-| $\mathrm{PrivK}^{\mathrm{mult}}_{\mathcal{A},\Pi}(n)$ | 多消息不可区分性游戏 | [§1](#1-动机为什么一次一密不够)（资料只给了名字） |
-| $\mathrm{Enc}_k(m)=\langle r,F_k(r)\oplus m\rangle$ | **教材 Construction 3.25**（PRF 构造，CPA 安全） | [§2](#2-一种多消息安全的方案教材-construction-325) |
-| $\mathrm{Enc}(sk,m,r)=(G(sk\Vert r)\oplus m,\ r)$ | 课程资料的写法（**课程补充**，教材没有该构造） | [§2](#2-一种多消息安全的方案教材-construction-325) |
-| $\mathrm{Enc}_{sk}(m_b^{*})$ | Challenge 阶段只此一次的二择一 | [§3](#3-ind-cpa选择明文攻击下的不可区分性) |
-| CPA2（课程叫法） | 教材的“CPA security for multiple encryptions”；由 Claim 3.23 与单次 CPA 等价 | [§4](#4-ind-cpa-与-multi-message-security-的关系) |
+| $\mathrm{Enc}(sk,m)=m\oplus G(sk)$ | EAV 构造，只支持一次加密 | §1 |
+| 联合分布 CI | 同一 $sk$ 下两条消息序列的联合分布不可区分 | §2.1 |
+| $c=m\oplus G(sk)\oplus r$ | 直接加随机数，无法解密 | §2.3 |
+| $G'(sk\Vert r)=r\Vert G(sk)$ | 说明泄露 $r$ 后 PRG 不再保证伪随机 | §2.3 |
+| IND-CPA 优势 | $\lvert\Pr[b'=b]-1/2\rvert$ | §3.1 |
+| LR-CPA | 多轮 $(M0_i,M1_i)$，始终用同一个 $b$ | §4.2 |
+| Hybrid | Game Left → Game 1 → … → Game Right | §4.4 |
 
 ## 6. 听课重点与易混点
 
-1. **“只能一次一密”这句话针对的是确定性的流密码**：密钥流一旦复用，异或可逆性立刻给出冲撞。
-2. **随机化是手段**：多消息安全的方案都要让同一消息两次加密结果不同（这是与 [02 篇](02_完美保密与一次性密码本.md) OTP 的根本差别）。
-3. **IND-CPA 与 CPA2 的差别在“挑战发生几次”**：IND-CPA 只有一次挑战；CPA2 每轮都挑战。二者等价（由 hybrid），但证明时用 CPA2 更方便。
-4. **两处“显然”要能自己补出来**（CPA2⇒Multi-Msg、CPA2⇒CPA），这正是考试里最常被要求写的方向性归约。
-5. **hybrid 的“搭桥”方向**：相邻游戏只差一位，这一位塞进一次 challenge。
+1. EAV 的问题不是「加密算法不好」，而是定义只允许一次挑战。构造本身继承了 OTP 的一次性。
+2. 确定性加密在 reuse 下必然失败：攻击者只比较密文是否相同就能区分两条序列。
+3. 直接把随机数异或进去无法解密；把随机数放进密文又会泄露种子的一部分。PRG 不保证「部分泄露后仍伪随机」。
+4. IND-CPA 的挑战仍然只有一次，多出来的是 Phase 1/2 的加密预言机。
+5. LR-CPA 比静态多消息强，因为攻击者可以根据上一轮密文调整下一轮消息。
+6. IND-CPA 与 LR-CPA 等价，但证明 LR-CPA 需要 hybrid；一次外部挑战不够回答 $q$ 轮。
+7. hybrid 的相邻游戏只差一轮，这一轮正好对应一次 IND-CPA 挑战；最后用 CI 传递性串起来。
 
 ## 7. 复习清单
 
-- [ ] 解释“流密码只能一次一密”的原因，并说明为什么异或可逆性是罪魁祸首。（[§1](#1-动机为什么一次一密不够)）
-- [ ] 写出教材 Construction 3.25 的多消息安全方案，并指出哪个量是随机化用的；说明课程的 $G(sk\Vert r)$ 写法为什么不能直接当成等价构造。（[§2](#2-一种多消息安全的方案教材-construction-325)）
-- [ ] 按四阶段默写 IND-CPA 游戏，并指出哪一阶段只允许一次。（[§3](#3-ind-cpa选择明文攻击下的不可区分性)）
-- [ ] 什么是 CPA2？为什么说“CPA2 ⇒ Multi-Msg Secure 显然”？（[§4.1](#41-课程叫法cpa2与教材的多次加密-cpa)）
-- [ ] 用 hybrid argument 说明 CPA ⇒ CPA2，并讲清“新引入的那一位是 challenge phase”是什么意思。（[§4.3](#43-cpa--cpa2-的-hybrid-构造搭长桥)）
+- [ ] 为什么 EAV 只支持一次加密？PRG 加密和 OTP 的共同点是什么？（[§1](#1-动机为什么一次一密不够)）
+- [ ] 写出 reuse 的联合分布定义，并说明「同一个 $sk$」为什么关键。（[§2.1](#21-reuse-的定义)）
+- [ ] 确定性加密为什么无法实现多消息安全？构造一个区分攻击。（[§2.2](#22-确定性加密为什么实现不了-reuse)）
+- [ ] 直接加随机数为什么不行？$G'(sk\Vert r)=r\Vert G(sk)$ 说明了什么？（[§2.3](#23-直接加随机数为什么不行)）
+- [ ] 按五阶段默写 IND-CPA，指出哪一阶段只允许一次。（[§3.1](#31-五个阶段)）
+- [ ] 中途岛例子说明了什么？为什么允许选择明文并不过分？（[§3.2](#32-为什么允许攻击者选择明文)）
+- [ ] IND-CPA 为什么能防住确定性加密攻击？（[§3.3](#33-ind-cpa-的-high-level-作用)）
+- [ ] 什么是 LR-CPA？它比静态多消息强在哪里？（[§4.2](#42-lr-cpa-的结构)）
+- [ ] 写出 IND-CPA ⇒ LR-CPA 的归约，并说明 Phase 1/2 为什么用 $(M,M)$。（[§4.3](#43-ind-cpa--lr-cpa-的归约)）
+- [ ] 用 hybrid argument 说明多次挑战如何用一次挑战完成，并解释为什么相邻游戏只差一轮。（[§4.4](#44-hybrid-argument用一次挑战满足多次询问)）
 
 ## 8. 关联知识点
 
-- 为什么要“随机化”才能在多消息下安全（OTP / 完美保密的对照）——见 [`02_完美保密与一次性密码本.md`](02_完美保密与一次性密码本.md#5-一次性密码本one-time-pad-otp)。
-- PRG 与语义安全（EAV）是本节安全定义的“零轮询问版”——见 [`03_单向函数与伪随机生成器.md`](03_单向函数与伪随机生成器.md#5-语义安全--eav-secure)。
-- 由 PRF 构造 IND-CPA 安全方案（把 Challenge 的“随机数”换成 PRF 的密钥）——见 [`05_伪随机函数与伪随机置换.md`](05_伪随机函数与伪随机置换.md#3-ind-cpa--prfs用伪随机函数构造-cpa-安全方案)。
-- 更强的攻击模型 CCA（含解密询问）——资料「第二次作业：CCA-PRP」只留了标题，见 [`00_索引.md`](00_索引.md) 的待确认事项；教材 §3.7（CCA）、§4.8–§4.9（CCA 安全加密与认证加密）。
+- OTP 的密钥复用问题与完美保密的代价——见 [`02_完美保密与一次性密码本.md`](02_完美保密与一次性密码本.md#5-一次性密码本one-time-pad-otp)。
+- PRG、EAV 与 PRG ⇒ EAV 的归约——见 [`03_单向函数与伪随机生成器.md`](03_单向函数与伪随机生成器.md#63-由-prg-得到-eav-安全的加密方案归约的思路)。
+- PRF / PRP 与 Construction 3.25——见 [`05_伪随机函数与伪随机置换.md`](05_伪随机函数与伪随机置换.md#3-ind-cpa--prfs用伪随机函数构造-cpa-安全方案)。
+- CCA 安全与认证加密——见 [`08_CCA安全与认证加密.md`](08_CCA安全与认证加密.md)。
 - 教材：§3.4.3（多消息 EAV）、§3.5（CPA 与 Claim 3.23）、§3.6.2（由 PRF 构造 CPA 安全方案）。
 
 ## 9. 来源与延伸阅读
 
-- 来源：用户提供的课程资料（速查表提纲 ＋ 课程笔记 Lec1–Lec13）；清单见 `密码学基础/readme.md`。原始资料（`数据安全与密码学基础.zip` 及其中的附件）均为**只读引用**，未改动。
-- 参考书：Katz & Lindell, *Introduction to Modern Cryptography*（2007 年第 1 版）**§3.4.3**、**§3.5**、**§3.6.2**。
-- 待补充：Lec5 / Lec6 的对应段落偏草稿（游戏图有缺笔、hybrid 的编号方向未写死），本笔记已就地标注，详见 [`00_索引.md`](00_索引.md) §6。
+- 主要来源：`class_documentation/class_documentation.md` 的「10.19 PRG 构造加密、EAV 归约与 reuse 问题」与「10.26 IND-CPA、LR-CPA 与 hybrid argument」。
+- 原始转写：`class_documentation/origin/2026-10-19_PRG构造加密与reuse问题.md`、`class_documentation/origin/2026-10-26_IND-CPA与LR-CPA.md`。
+- 教材对照：Katz & Lindell, *Introduction to Modern Cryptography*（2007 年第 1 版）§3.4.3、§3.5、§3.6.2。
