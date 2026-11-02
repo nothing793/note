@@ -170,7 +170,7 @@ LR-CPA（Left-or-Right CPA）是动态多轮游戏：
 
 这时 $\mathcal{A}$ 看到的正是 IND-CPA 游戏，隐藏比特就是 LR 的 $b$。若 $\mathcal{A}$ 有优势 $\delta$，$B$ 也有同样的优势。因此 LR-CPA 安全 ⇒ IND-CPA 安全。
 
-### 4.4 IND-CPA ⇒ LR-CPA：hybrid argument
+### 4.4 IND-CPA implies LR-CPA: hybrid argument
 
 反方向要处理 $q$ 轮动态挑战，不能只靠一次外部挑战。设 LR 攻击者 $\mathcal{A}$ 在“全左”和“全右”之间的优势为 $\delta$。定义 hybrid：
 
@@ -224,7 +224,7 @@ $H_0$ 与 $H_q$ 的区别正是 LR 游戏要区分的两端；若 $\mathcal{A}$ 
 - [ ] IND-CPA 为什么能防住确定性加密攻击？（[§3.3](#33-ind-cpa-的-high-level-作用)）
 - [ ] 什么是 LR-CPA？它比静态多消息强在哪里？（[§4.2](#42-lr-cpa-的结构)）
 - [ ] 写出 LR-CPA ⇒ IND-CPA 的直接归约，并说明加密询问为什么提交 $(M,M)$。（[§4.3](#43-lr-cpa--ind-cpa直接归约)）
-- [ ] 用 hybrid argument 说明 IND-CPA ⇒ LR-CPA，并解释为什么随机取相邻位置会带来 $\delta/q$ 的损失。（[§4.4](#44-ind-cpa--lr-cpa-hybrid-argument)）
+- [ ] 用 hybrid argument 说明 IND-CPA ⇒ LR-CPA，并解释为什么随机取相邻位置会带来 $\delta/q$ 的损失。（[§4.4](#44-ind-cpa-implies-lr-cpa-hybrid-argument)）
 
 ## 8. 关联知识点
 
