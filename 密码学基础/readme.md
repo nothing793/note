@@ -6,7 +6,7 @@
 
 | 路径 | 内容 |
 |---|---|
-| `class_documentation/` | 课堂记录的整理稿、完整转写，以及按日期拆分的 6 次课原件 |
+| `class_documentation/` | 课堂记录的整理稿、按日期拆分的 7 次课原始转写 |
 | `笔记/` | 按主题编排的复习笔记，入口是 `笔记/00_索引.md` |
 | `Introduction_to_Modern_Cryptography.pdf` | Katz & Lindell, *Introduction to Modern Cryptography*（2007 年第 1 版），只读引用 |
 | `tasks.md` | 当前整理任务清单 |
@@ -14,16 +14,16 @@
 
 ## 资料来源
 
-1. **课堂记录（主要来源）**：`class_documentation/class_documentation.md`。它按 6 次课整理了课程主线、术语和例子；需要查原话时看 `class_documentation/origin/` 中对应日期的拆分文件，完整原件仍是 `class_documentation/origin.md`。
+1. **课堂记录（主要来源）**：`class_documentation/class_documentation.md`。它按 7 次课整理了课程主线、术语和例子；需要查原话时看 `class_documentation/origin/` 中对应日期的原始转写。
 2. **教材（核对用）**：Katz & Lindell, *Introduction to Modern Cryptography*, Chapman & Hall/CRC, 2007 年第 1 版。课堂记录没有写清的定义、定理编号或构造，按这本教材核对；教材与课堂记录冲突时，笔记中并列说明，不擅自判定。
 3. **不再使用的外部网页**：早期笔记参考过两个网页，现已不作为资料来源，相关链接已从笔记来源说明中移除。
 
-教材 PDF 是只读文件：不修改、不移动、不重命名。课堂转写 `origin.md` 也保持原样；需要修订内容时，先改整理稿，再按日期重新拆分。
+教材 PDF 是只读文件：不修改、不移动、不重命名。`origin/` 中的课堂转写也保持原样；需要修订内容时只改整理稿，不改原始转写。
 
 ## 笔记现状
 
-- `笔记/01`–`04` 已按 `class_documentation.md` 重写，分别对应导论、完美保密、OWF/PRG、多消息与 IND-CPA。
-- `笔记/05`–`14` 仍是早前整理的版本，保留了当时的教材对照和课程补充。后续继续重写时，以 `class_documentation/` 和教材为准。
+- `笔记/01`–`05` 已按 `class_documentation.md` 校准。`05` 的 PRF 定义、PRF ⇒ PRG、PRF ⇒ IND-CPA 按 11-02 课堂记录重写，PRP 与工作模式仍来自教材和早期资料。
+- `笔记/06`–`14` 仍是早前整理的版本，保留了当时的教材对照和课程补充。后续继续重写时，以 `class_documentation/` 和教材为准。
 - 每篇笔记的结构大致是：速览 → 定义与直觉 → 构造与证明 → 公式汇总 → 易混点 → 复习清单 → 关联知识点 → 来源。
 
 ## 使用方式

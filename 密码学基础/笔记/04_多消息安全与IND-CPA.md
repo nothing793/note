@@ -1,7 +1,7 @@
 # 密码学基础 · 04：多消息安全与 IND-CPA（Multiple-Message Security & Chosen-Plaintext Attacks）
 
-> 来源：`class_documentation/class_documentation.md` 的「10.19 PRG 构造加密、EAV 归约与 reuse 问题」与「10.26 IND-CPA、LR-CPA 与 hybrid argument」；原始转写见 `class_documentation/origin/2026-10-19_PRG构造加密与reuse问题.md` 和 `2026-10-26_IND-CPA与LR-CPA.md`。
-> 整理日期：2026-11-01
+> 来源：`class_documentation/class_documentation.md` 的「10.19 PRG 构造加密、EAV 归约与 reuse 问题」「10.26 IND-CPA、LR-CPA 与 hybrid argument」以及 11-02 课对 PRF 构造的补充；原始转写见 `class_documentation/origin/2026-10-19_PRG构造加密与reuse问题.md`、`2026-10-26_IND-CPA与LR-CPA.md` 和 `2026-11-2.md`。
+> 整理日期：2026-11-02（按三次课堂记录校准）
 > 说明：本节的主线是「EAV 只够一次加密 → 需要 reuse → 确定性加密不行 → IND-CPA → 用 LR-CPA 和 hybrid 证明 IND-CPA 包住多消息」。
 > 教材对照：Katz & Lindell（2007 年第 1 版）§3.4.3、§3.5、§3.6.2。
 
@@ -89,7 +89,7 @@ $G'$ 可以是 PRG，但它的前 $n$ 位直接就是 $r$，完全泄露。这�
 
 从归约角度看，问题也很清楚：PRG 游戏只给归约器一个样本，不会给 $r$；归约器无法模拟「攻击者看到 $r$」的环境，义务对不上。
 
-所以需要更强的工具：**即使一部分信息泄露，剩下的 mask 仍然伪随机**。下一次课升级到 PRF 等工具，才能构造真正的多消息安全方案。
+所以需要更强的工具：**即使一部分信息泄露，剩下的 mask 仍然伪随机**。11-02 课用 PRF 给出了一个具体构造：$\mathrm{Enc}_{sk}(m)=(r,F_{sk}(r)\oplus m)$，每条消息重新取 $r$；构造与归约见 [`05` §3–§4](05_伪随机函数与伪随机置换.md#3-prf--ind-cpa用伪随机函数构造加密方案)。
 
 > 教材对照：教材 §3.6.2 的 Construction 3.25 用 PRF $F_k$ 构造
 > $$\mathrm{Enc}_k(m)=\langle r,\ F_k(r)\oplus m\rangle,$$
@@ -160,50 +160,36 @@ LR-CPA（Left-or-Right CPA）是动态多轮游戏：
 
 所以 LR-CPA 的攻击者只强不弱，LR-CPA 安全 ⇒ 多消息安全。
 
-### 4.3 IND-CPA ⇒ LR-CPA 的归约
+### 4.3 LR-CPA ⇒ IND-CPA：直接归约
 
-**外部游戏**：归约器 $R$ 与 IND-CPA 挑战者玩。
-**内部游戏**：$R$ 扮演 LR-CPA 挑战者，与攻击者 $\mathcal{A}$ 玩。
+先看容易的方向。假设 LR-CPA 安全，要证 IND-CPA 也安全。给定一个 IND-CPA 攻击者 $\mathcal{A}$，构造 LR-CPA 攻击者 $B$：
 
-步骤：
+1. $\mathcal{A}$ 询问明文 $m$ 的密文时，$B$ 向 LR oracle 提交 $(m,m)$。无论 LR 的隐藏比特是什么，返回的都是 $\mathrm{Enc}(sk,m)$。
+2. $\mathcal{A}$ 提交挑战 $(M_0^*,M_1^*)$ 时，$B$ 把同一对消息交给 LR oracle，拿回 $\mathrm{Enc}(sk,M_b^*)$，其中 $b$ 是 LR 游戏的隐藏比特。
+3. $\mathcal{A}$ 输出 $b'$，$B$ 原样输出。
 
-1. 公开参数直接转发给 $\mathcal{A}$；
-2. Phase 1 中 $\mathcal{A}$ 询问明文 $M$ 的密文时，$R$ 直接把 $M$ 交给外部 IND-CPA 的加密预言机；如果按 LR 写法，就是把 $(M,M)$ 同时作为左右消息。无论外部比特 $b$ 是什么，拿到的都是 $\mathrm{Enc}(sk,M)$，正好是 $\mathcal{A}$ 需要的；
-3. Challenge 阶段，$\mathcal{A}$ 发 $(M_0^*,M_1^*)$，$R$ 直接转给外部挑战者，拿回 $\mathrm{Enc}(sk,M_b^*)$；
-4. Phase 2 继续按同样方式回答加密询问；
-5. $\mathcal{A}$ 输出 $b'$，$R$ 直接输出 $b'$。
+这时 $\mathcal{A}$ 看到的正是 IND-CPA 游戏，隐藏比特就是 LR 的 $b$。若 $\mathcal{A}$ 有优势 $\delta$，$B$ 也有同样的优势。因此 LR-CPA 安全 ⇒ IND-CPA 安全。
 
-如果 $\mathcal{A}$ 赢，$R$ 也赢，因为两者用的是同一个 $b$。优势没有损失。
+### 4.4 IND-CPA ⇒ LR-CPA：hybrid argument
 
-上面的写法处理了「一次挑战 + 两段预言机询问」。LR-CPA 有 $q$ 次挑战，单靠一次外部挑战不够，需要 hybrid argument。
+反方向要处理 $q$ 轮动态挑战，不能只靠一次外部挑战。设 LR 攻击者 $\mathcal{A}$ 在“全左”和“全右”之间的优势为 $\delta$。定义 hybrid：
 
-### 4.4 Hybrid argument：用一次挑战满足多次询问
+- $H_0$：所有轮都返回 $M1_i$ 的加密（全右）；
+- $H_i$：前 $i$ 轮返回 $M0_j$，其余返回 $M1_j$；
+- $H_q$：所有轮都返回 $M0_i$ 的加密（全左）。
 
-定义一串游戏，把「全答左边」逐步换成「全答右边」：
+$H_0$ 与 $H_q$ 的区别正是 LR 游戏要区分的两端；若 $\mathcal{A}$ 的优势为 $\delta$，三角不等式保证存在某个相邻对 $H_{i-1},H_i$，$\mathcal{A}$ 区分它们的优势至少为 $\delta/q$。
 
-- **Game Left**：所有轮都返回 $M0$ 的加密；
-- **Game 1**：第 1 轮返回 $M1$，其余返回 $M0$；
-- **Game 2**：前 2 轮返回 $M1$，其余返回 $M0$；
-- ……
-- **Game Right**：所有轮都返回 $M1$。
+归约器 $B$ 随机取一个 $i\leftarrow\{1,\dots,q\}$，扮演 LR 挑战者与 $\mathcal{A}$ 玩 $H_{i-1}$ 或 $H_i$：
 
-相邻两个游戏只差一轮：
+- 第 $i$ 轮之前，$B$ 用外部 IND-CPA 加密预言机加密 $M0_j$；
+- 第 $i$ 轮，$B$ 把 $(M0_i,M1_i)$ 交给外部 IND-CPA 挑战者，用返回的挑战密文作答；外部比特为 0 时得到 $H_i$，为 1 时得到 $H_{i-1}$；
+- 第 $i$ 轮之后，$B$ 用外部加密预言机加密 $M1_j$；
+- $\mathcal{A}$ 输出后，$B$ 把它的猜测作为外部挑战比特的猜测。
 
-$$\text{Game }i \quad\text{与}\quad \text{Game }i+1.$$
+若 $\mathcal{A}$ 能区分 $H_{i-1}$ 与 $H_i$，$B$ 就能以同样优势攻破 IND-CPA。随机取 $i$ 后，$B$ 的优势至少为 $\delta/q$。因此若 IND-CPA 安全，$\delta/q$ 可忽略，$\delta$ 也可忽略，LR-CPA 安全。
 
-这一轮的差别正好可以塞进一次 IND-CPA 挑战：第 $i+1$ 轮把真正的 $(M0_{i+1},M1_{i+1})$ 发给外部挑战者；其他轮在相邻两个 hybrid 里答案相同，于是把两侧设成同一个消息（已固定的那一侧）发过去，外部挑战者返回的就是该轮需要的密文。若 $\mathcal{A}$ 能区分这两个相邻游戏，就能攻破 IND-CPA。于是每一段的区分优势都可忽略。
-
-由 CI 的传递性，
-
-$$\text{Game Left}\ \approx_c\ \text{Game }1\ \approx_c\ \cdots\ \approx_c\ \text{Game Right}.$$
-
-这正是「左序列的联合分布与右序列的联合分布不可区分」，也就是多消息安全。LR-CPA 比静态多消息更强，所以 IND-CPA ⇒ LR-CPA ⇒ 多消息安全。
-
-反过来，LR-CPA 安全 ⇒ IND-CPA 安全：IND-CPA 只是 LR-CPA 去掉 Phase 1/2 后的特例；LR-CPA 的挑战轮里把两条消息设为相同，就能模拟普通加密询问。因此二者等价。
-
-课堂把 hybrid 比作「分期付款」：金主一次只给一块钱，但我可以换很多个 hybrid 游戏，每个游戏只花一次挑战，最后拼成完整的证明。
-
----
+两个方向合起来，IND-CPA 与 LR-CPA 等价。LR-CPA 允许攻击者看到上一轮密文后调整下一轮消息，比静态多消息游戏更强，所以 LR-CPA 安全也直接推出多消息安全。课堂把 hybrid 比作“分期付款”：一次外部挑战只够比较相邻两个 hybrid，把 $q$ 段串起来才得到完整证明。
 
 ## 5. 关键公式与记号汇总
 
@@ -215,7 +201,7 @@ $$\text{Game Left}\ \approx_c\ \text{Game }1\ \approx_c\ \cdots\ \approx_c\ \tex
 | $G'(sk\Vert r)=r\Vert G(sk)$ | 说明泄露 $r$ 后 PRG 不再保证伪随机 | §2.3 |
 | IND-CPA 优势 | $\lvert\Pr[b'=b]-1/2\rvert$ | §3.1 |
 | LR-CPA | 多轮 $(M0_i,M1_i)$，始终用同一个 $b$ | §4.2 |
-| Hybrid | Game Left → Game 1 → … → Game Right | §4.4 |
+| Hybrid | $H_0$ → $H_1$ → … → $H_q$；相邻两个只差一轮 | §4.4 |
 
 ## 6. 听课重点与易混点
 
@@ -237,19 +223,19 @@ $$\text{Game Left}\ \approx_c\ \text{Game }1\ \approx_c\ \cdots\ \approx_c\ \tex
 - [ ] 中途岛例子说明了什么？为什么允许选择明文并不过分？（[§3.2](#32-为什么允许攻击者选择明文)）
 - [ ] IND-CPA 为什么能防住确定性加密攻击？（[§3.3](#33-ind-cpa-的-high-level-作用)）
 - [ ] 什么是 LR-CPA？它比静态多消息强在哪里？（[§4.2](#42-lr-cpa-的结构)）
-- [ ] 写出 IND-CPA ⇒ LR-CPA 的归约，并说明 Phase 1/2 为什么用 $(M,M)$。（[§4.3](#43-ind-cpa--lr-cpa-的归约)）
-- [ ] 用 hybrid argument 说明多次挑战如何用一次挑战完成，并解释为什么相邻游戏只差一轮。（[§4.4](#44-hybrid-argument用一次挑战满足多次询问)）
+- [ ] 写出 LR-CPA ⇒ IND-CPA 的直接归约，并说明加密询问为什么提交 $(M,M)$。（[§4.3](#43-lr-cpa--ind-cpa直接归约)）
+- [ ] 用 hybrid argument 说明 IND-CPA ⇒ LR-CPA，并解释为什么随机取相邻位置会带来 $\delta/q$ 的损失。（[§4.4](#44-ind-cpa--lr-cpa-hybrid-argument)）
 
 ## 8. 关联知识点
 
 - OTP 的密钥复用问题与完美保密的代价——见 [`02_完美保密与一次性密码本.md`](02_完美保密与一次性密码本.md#5-一次性密码本one-time-pad-otp)。
 - PRG、EAV 与 PRG ⇒ EAV 的归约——见 [`03_单向函数与伪随机生成器.md`](03_单向函数与伪随机生成器.md#63-由-prg-得到-eav-安全的加密方案归约的思路)。
-- PRF / PRP 与 Construction 3.25——见 [`05_伪随机函数与伪随机置换.md`](05_伪随机函数与伪随机置换.md#3-ind-cpa--prfs用伪随机函数构造-cpa-安全方案)。
+- PRF / PRP 与 Construction 3.25——见 [`05_伪随机函数与伪随机置换.md`](05_伪随机函数与伪随机置换.md#3-prf--ind-cpa用伪随机函数构造加密方案)。
 - CCA 安全与认证加密——见 [`08_CCA安全与认证加密.md`](08_CCA安全与认证加密.md)。
 - 教材：§3.4.3（多消息 EAV）、§3.5（CPA 与 Claim 3.23）、§3.6.2（由 PRF 构造 CPA 安全方案）。
 
 ## 9. 来源与延伸阅读
 
-- 主要来源：`class_documentation/class_documentation.md` 的「10.19 PRG 构造加密、EAV 归约与 reuse 问题」与「10.26 IND-CPA、LR-CPA 与 hybrid argument」。
-- 原始转写：`class_documentation/origin/2026-10-19_PRG构造加密与reuse问题.md`、`class_documentation/origin/2026-10-26_IND-CPA与LR-CPA.md`。
+- 主要来源：`class_documentation/class_documentation.md` 的「10.19 PRG 构造加密、EAV 归约与 reuse 问题」「10.26 IND-CPA、LR-CPA 与 hybrid argument」与「11.2 PRF、PRG 与 IND-CPA 加密」。
+- 原始转写：`class_documentation/origin/2026-10-19_PRG构造加密与reuse问题.md`、`class_documentation/origin/2026-10-26_IND-CPA与LR-CPA.md`、`class_documentation/origin/2026-11-2.md`。
 - 教材对照：Katz & Lindell, *Introduction to Modern Cryptography*（2007 年第 1 版）§3.4.3、§3.5、§3.6.2。

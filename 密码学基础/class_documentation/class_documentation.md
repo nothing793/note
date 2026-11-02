@@ -15,6 +15,7 @@
 - **PPT**：Probabilistic Polynomial-Time，概率多项式时间。
 - **OWF**：One-Way Function，单向函数。
 - **PRG**：Pseudorandom Generator，伪随机数生成器。
+- **PRF**：Pseudorandom Function，伪随机函数；公开函数族，密钥决定具体成员。
 - **CI**：Computational Indistinguishability，计算不可区分。
 - **EAV**：Eavesdropping security，窃听安全。
 - **IND-CPA**：Indistinguishability under Chosen-Plaintext Attack。
@@ -231,22 +232,86 @@ G(U_n)\approx_c U_{L(n)}.
 
 **LR-CPA**：挑战者先选 \(sk\) 和 \(b\)；攻击者交互式发送 \(M0_i,M1_i\)，挑战者返回 \(\mathrm{Enc}(sk,M_{b,i})\)；攻击者最后猜 \(b'\)。LR-CPA 是动态策略，强于静态 multiple-message 游戏。
 
-**等价性证明方向**：要证 IND-CPA 安全 \(\Rightarrow\) LR-CPA 安全；逆否为：若 A 攻破 LR-CPA，则 reduction 攻破 IND-CPA。
+**等价性证明方向**：
+- **LR-CPA 安全 ⇒ IND-CPA 安全**：IND-CPA 只是 LR-CPA 去掉多轮后的特例，直接把加密询问写成 \((M,M)\)、把挑战写成 \((M_0^*,M_1^*)\) 即可。
+- **IND-CPA 安全 ⇒ LR-CPA 安全**：这是需要 hybrid argument 的方向。
 
-**归约模拟**：
-- 外部：reduction 与 IND-CPA 挑战者玩；
-- 内部：reduction 扮演 LR-CPA 挑战者与 A 玩；
-- Phase 1/2 中 A 询问 \(M\) 时，reduction 把 \(M0=M1=M\) 发给外部挑战者，拿回 \(\mathrm{Enc}(sk,M)\)；
-- Challenge 时把 A 的 \(M0^*,M1^*\) 直接发给外部挑战者；
-- A 输出 \(b'\)，reduction 直接输出 \(b'\)。若 A 赢，reduction 赢，优势不损失。
+**LR-CPA ⇒ IND-CPA 的归约**：
+- 外部：reduction 与 LR-CPA 挑战者玩；
+- 内部：reduction 扮演 IND-CPA 挑战者与 A 玩；
+- A 询问明文 \(M\) 的密文时，reduction 把 \((M,M)\) 发给 LR oracle；无论隐藏比特是什么，返回的都是 \(\mathrm{Enc}(sk,M)\)；
+- Challenge 时把 A 的 \((M0^*,M1^*)\) 直接发给 LR oracle，拿回的密文就是 IND-CPA 的挑战密文；
+- A 输出 \(b'\)，reduction 直接输出 \(b'\)。若 A 有优势，reduction 也一样。
 
-**核心难点**：LR-CPA 中 A 可多次询问，而 IND-CPA 挑战者只给一次挑战密文。解决办法是 **hybrid argument**：
-- 定义 Game Left（全答左边）、Game 1（第 1 个答右边，其余左边）、……、Game Right（全答右边）。
-- 相邻 hybrid 只差一个位置，可用一次 IND-CPA 挑战来证明不可区分；
-- 由 CI 传递性，Game Left 与 Game Right 不可区分，即 multiple-message security 得证。
-- 直观：金主只给“1 块钱”，但可玩很多次不同 hybrid 游戏，“分期付款”式完成证明。
+**IND-CPA ⇒ LR-CPA 的核心难点**：LR-CPA 中 A 要发 \(q\) 轮动态消息，而 IND-CPA 挑战者只给一次挑战密文。解决办法是 **hybrid argument**：
+- 定义 \(H_0\)（全答右边）、\(H_i\)（前 \(i\) 轮答左边，其余答右边）、……、\(H_q\)（全答左边）。
+- 相邻 hybrid 只差一轮；随机取一个相邻位置 \(i\)，用一次 IND-CPA 挑战模拟这一轮，就能把 A 的区分优势除以 \(q\)，得到 IND-CPA 攻击者。
+- 若 IND-CPA 安全，相邻 hybrid 的区分优势可忽略；由三角不等式，全左与全右也不可区分，即 LR-CPA 安全。
 
 **结论**：IND-CPA 与 LR-CPA 等价；LR-CPA 显然包住 multiple-message security；因此 IND-CPA 满足 reuse 需求，是第二阶段的好定义。下节课将升级 PRG，构造满足 IND-CPA 的加密方案。
+
+---
+
+## 11.2 PRF、PRG 与 IND-CPA 加密
+
+**本节目标**：说明 PRG 为什么不足以支持密钥复用，引入 PRF 的函数族与黑盒模型，并给出 PRF ⇒ IND-CPA 的加密构造和归约。
+
+**课程安排**：下周一考试，具体范围与题型尚未最终确定。老师提醒不要只按往年题准备，答题尽量多写，中文、英文都可以；这次可能出大题，也可能考“给一个定义再作证明”的题。
+
+**从 PRG 到 PRF 的动机**：上节课已经看到，PRG 只保证“不知道种子时输出像随机”；一旦攻击者看到随机化过程中的一部分，PRG 不再保证剩余部分仍伪随机，因此无法直接得到多消息安全。现在的目标不是让整段代码不可区分，而是让攻击者在**黑盒询问**下无法区分“由密钥选出的函数”和“真正随机的函数”。
+
+**纯随机函数的代价**：从所有 \(n\) 位到 \(n\) 位函数中均匀选一个，函数总数是
+\[
+(2^n)^{2^n}=2^{n\cdot 2^n}.
+\]
+要把这样一个函数完整描述出来，密钥长度至少是指数级的 \(n\cdot 2^n\) 位，实际不可用。于是退一步：只公开一个较小的函数族 \(\mathcal{F}\)，用短密钥 \(sk\) 选择其中一个 \(F_{sk}\)。
+
+**为什么不能直接比较代码**：如果把“PRG 构造出的函数”和“纯随机函数”当成两个分布做计算不可区分，攻击者可以用代码长度区分：前者描述很短，后者真值表极长。问题在于比较对象选错了。PRF 只要求**输入输出行为**在黑盒访问下不可区分，不要求函数描述本身不可区分。
+
+**PRF 的定义**：一个带密钥的函数族 \(\mathcal{F}=\{F_{sk}\}\) 是伪随机函数，若对任意 PPT 攻击者 \(\mathcal{A}\)，都有
+\[
+\left|\Pr[\mathcal{A}^{F_{sk}(\cdot)}(1^n)=1]-\Pr[\mathcal{A}^{f_n(\cdot)}(1^n)=1]\right|\le \mathrm{negl}(n),
+\]
+其中 \(sk\) 均匀随机，\(f_n\) 是从所有 \(n\) 位到 \(n\) 位函数中均匀选出的随机函数。游戏里挑战者把整个函数族和求值算法公开给 \(\mathcal{A}\)，但**不告诉具体选了哪个 \(sk\)**；\(\mathcal{A}\) 只能自适应地询问输入、得到输出，不能读密钥。即使输入由攻击者任意选择，只要这些输入没有重复，理想随机函数在未问过点上的取值仍与已问过的值独立。
+
+**PRF 与 PRG 的关系**：
+- PRG 是固定算法，秘密在种子 \(x\)；攻击者看到的是输出样本。
+- PRF 是一个公开函数族，秘密在下标 \(sk\)；攻击者可以黑盒询问很多输入。
+- PRF 本身不要求长度扩张，但很容易造出 PRG：固定互不相同的输入 \(1,2,\dots,\ell(n)\)，令
+\[
+G(sk)=F_{sk}(1)\|F_{sk}(2)\|\cdots\|F_{sk}(\ell(n)).
+\]
+想要多长的输出就取多少个函数值。课堂还提到 PRG、PRF 与单向函数在复杂性上可以互相构造，但本节没有展开证明；下节课先讲如何从 PRG 构造 PRF。
+
+**用 PRF 构造 IND-CPA 加密**：
+- \(\mathrm{Gen}(1^n)\) 输出 \(sk\leftarrow\{0,1\}^n\)；
+- \(\mathrm{Enc}_{sk}(m)\) 取一个本次加密专用的 \(r\leftarrow\{0,1\}^n\)，输出
+\[
+c=(r,\ F_{sk}(r)\oplus m);
+\]
+- \(\mathrm{Dec}_{sk}(r,c_2)=F_{sk}(r)\oplus c_2\)。
+
+正确性直接由异或得到。密文长度是明文的两倍，随机数 \(r\) 的作用是让同一明文每次得到不同的 \(F_{sk}(r)\)。课堂强调 \(r\) 在加密过程中不能重复，也不能让攻击者提前预测；若按均匀随机抽取，重复概率至多约为 \(Q^2/2^n\)（\(Q\) 为询问次数），在归约中作为可忽略的失败事件处理。
+
+**PRF ⇒ IND-CPA 的归约**：
+1. 归约器 \(B\) 参加外部的 PRF 游戏，拿到公开的函数族描述和一个函数 oracle；它**不知道 \(sk\)**，也不自己生成 \(sk\)。
+2. \(B\) 扮演 IND-CPA 挑战者与攻击者 \(\mathcal{A}\) 交互，并自己选一个内部比特 \(d\)。
+3. \(\mathcal{A}\) 询问明文 \(m\) 的密文时，\(B\) 取新的 \(r\)，向外部 oracle 询问 \(F(r)\)，返回 \((r,F(r)\oplus m)\)。
+4. 挑战阶段，\(\mathcal{A}\) 给出等长消息 \(m_0,m_1\)，\(B\) 取新的 \(r^*\)，返回 \((r^*,F(r^*)\oplus m_d)\)。
+5. \(\mathcal{A}\) 输出 \(d'\) 后，\(B\) 若看到 \(d'=d\) 就猜外部是 PRF（记为 0），否则猜外部是随机函数（记为 1）。
+
+**概率分析**：
+- 外部是 PRF 时，\(\mathcal{A}\) 看到的正是真实的 IND-CPA 游戏。若 \(\mathcal{A}\) 的优势为 \(\varepsilon\)，则它猜对 \(d\) 的概率为 \(1/2+\varepsilon/2\)（假定优势取在有利方向；反向时把输出翻转即可）。
+- 外部是随机函数时，每个未重复 \(r\) 对应的函数值都是独立均匀的，相当于一次一密；无论 \(d\) 取什么，\(\mathcal{A}\) 都只能以 \(1/2\) 猜对。
+- 因而 \(B\) 区分 PRF 与随机函数的优势约为 \(\varepsilon/2\)。若 \(\varepsilon\) 不可忽略，就得到攻破 PRF 的 PPT 攻击者，矛盾。
+
+**懒惰采样（lazy sampling）**：模拟随机函数时不需要预先写出整张真值表。挑战者维护一张查询表：输入出现过就直接返回旧值；没出现过就均匀取一个新值，写入表中再返回。对攻击者来说，这与“事先选好一个完整随机函数”的分布完全一致。
+
+**易错点**：
+- PRF 公开的是函数族，不公开具体密钥；不能把“整个函数族可见”误写成“密钥可见”。
+- 归约器 \(B\) 不知道 \(sk\)，所有 \(F_{sk}(\cdot)\) 都通过外部 oracle 得到；归约器自己生成 \(sk\) 是错误写法。
+- PRF 的定义比较的是 oracle 行为，不是函数代码或真值表长度。
+- 随机数 \(r\) 必须每次加密重新取，且归约要单独处理碰撞事件。
 
 ---
 
