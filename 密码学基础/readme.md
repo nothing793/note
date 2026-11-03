@@ -8,6 +8,7 @@
 |---|---|
 | `class_documentation/` | 课堂记录的整理稿、按日期拆分的 7 次课原始转写 |
 | `笔记/` | 按主题编排的复习笔记，入口是 `笔记/00_索引.md` |
+| `期中复习题.md` | 前七周期中复习题（原创，含参考答案） |
 | `Introduction_to_Modern_Cryptography.pdf` | Katz & Lindell, *Introduction to Modern Cryptography*（2007 年第 1 版），只读引用 |
 | `tasks.md` | 当前整理任务清单 |
 | `readme.md` | 本文件 |
