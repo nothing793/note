@@ -9,7 +9,7 @@
 |---|---|
 | `00_索引.md` | **入口**：文件列表、一句话摘要、建议阅读顺序、配图与脚本清单、待确认事项 |
 | `01_ADS00_课程介绍与考核.md` | 课程介绍与考核方式 |
-| `02_ADS001_伸展树与摊还分析.md` | 伸展树（splay tree）与摊还分析（amortized analysis，势能法 / 记账法） |
+| `02_ADS001_伸展树与摊还分析.md` | 伸展树（splay tree）与摊还分析（amortized analysis，势能法 / 记账法）；**复习笔记**，2026-11-05 统一结构 |
 | `03_ADS02_红黑树与B+树.md` | 红黑树（red-black tree）与 B+ 树（B+ tree） |
 | `04_ADS03_倒排文件索引.md` | 倒排文件索引（inverted file index，trie / 哈希表（hash table）） |
 | `05_ADS04_左式堆与斜堆.md` | 左式堆（leftist heap）与斜堆（skew heap） |
