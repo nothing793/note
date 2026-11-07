@@ -50,11 +50,26 @@ def slugify(value: str, separator: str = "-") -> str:
 _DUP_RE = re.compile(r"^(.*)-([0-9]+)$")
 
 
-def unique_github(anchor: str, used: set) -> str:
-    """重名时追加 `-1`、`-2`…（GitHub 的规则），替代 python-markdown 的 `_1`。"""
-    while anchor in used or not anchor:
-        m = _DUP_RE.match(anchor)
-        anchor = f"{m.group(1)}-{int(m.group(2)) + 1}" if m else f"{anchor}-1"
+def unique_github(anchor: str, used: set, counters: dict | None = None) -> str:
+    """重名时追加 `-1`、`-2`…（GitHub 的规则），替代 python-markdown 的 `_1`。
+
+    python-markdown 3.8 起 `toc.unique()` 多了一个 `id_counters` 参数
+    （`unique(id, ids, counters)`），旧版只有两个参数。这里两套签名都兼容，
+    否则 CI 上会报 `takes 2 positional arguments but 3 were given`。
+    """
+    if counters is None:
+        # 旧版 toc：靠锚点自身的后缀递增（`a` → `a-1` → `a-2`）。
+        while anchor in used or not anchor:
+            m = _DUP_RE.match(anchor)
+            anchor = f"{m.group(1)}-{int(m.group(2)) + 1}" if m else f"{anchor}-1"
+    else:
+        # 新版 toc：用 counters 记录同一标题已经用到第几个后缀，避免逐个试探。
+        base = anchor
+        suffix = counters.get(base, 0)
+        while anchor in used or not anchor:
+            suffix += 1
+            anchor = f"{base}-{suffix}"
+        counters[base] = suffix
     used.add(anchor)
     return anchor
 
