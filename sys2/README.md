@@ -1,8 +1,8 @@
 # 计算机系统 II（sys2）
 
 > 浙江大学《计算机系统 II》（Computer Systems II）的讲义、朋辈辅学资料、练习题与整理笔记工作目录。
-> 硬件部分第 1–4 讲讲义署卢立（Li Lu），第 5–6 讲 PDF 标题页署 Haifeng Liu；OS 部分第 0–1 讲署 Wenbo Shen。
-> 最近更新：2026-10-30
+> 硬件部分第 1–4 讲讲义署卢立（Li Lu），第 5–6 讲 PDF 标题页署 Haifeng Liu；OS 部分第 0–2 讲署 Wenbo Shen。
+> 最近更新：2026-11-06
 
 ## 1. 快速入口
 
@@ -27,7 +27,7 @@
 
 ## 3. 资料层级与标注
 
-1. **讲义 PDF 是主标准**：硬件部分 `lec/lec01`–`lec06`；OS 部分 `lec/00-0_course_syllabus.pdf`、`lec/00-1_computerarchitecture.pdf`、`lec/01_intro.pdf`。硬件第 5、6 讲以 PDF 为准，旧版 `lec05.pptx` 只用于硬件第 5 讲附录 A 的 Tomasulo 例题。
+1. **讲义 PDF 是主标准**：硬件部分 `lec/lec01`–`lec06`；OS 部分 `lec/00-0_course_syllabus.pdf`、`lec/00-1_computerarchitecture.pdf`、`lec/01_intro.pdf`、`lec/02-1_structures.pdf`。硬件第 5、6 讲以 PDF 为准，旧版 `lec05.pptx` 只用于硬件第 5 讲附录 A 的 Tomasulo 例题。
 2. **`class/` 是补充资料**：与讲义重复的内容标为“重复·重点”；`classN` 有而 `lecN` 没有的内容标为“补充”。不得用补充资料覆盖讲义口径。
 3. 页码约定：`(p.x)` 指 **PDF 页码**；OS 第 0 讲合并两份 PDF，写成 `(00-0 p.x)` / `(00-1 p.x)`；`(s.x)` 只指旧版硬件第 5 讲 PPTX 的幻灯片页码，三者不要混用。
 4. 来源标注：
@@ -82,7 +82,7 @@ python3 网站/build.py                         # 汇集 → 构建 → 站点�
 ## 7. 当前状态
 
 - 硬件部分已整理到第 6 讲：笔记索引 + `hardware-01`–`hardware-06` 六篇正文，`assets/` 中保存讲义原页导出图与旧版第 5 讲历史配图。
-- OS 部分已整理到第 1 讲：`os-00`（课程导论 + 体系结构回顾）与 `os-01`（操作系统概述）两篇正文。
+- OS 部分已整理到第 2 讲：`os-00`（课程导论 + 体系结构回顾）、`os-01`（操作系统概述）与 `os-02`（OS 结构、系统调用、链接与加载）三篇正文。
 - 硬件第 5 讲正文按新 PDF（76 页，§5.1–§5.3）编排，附录 A 保留旧版 PPTX 的 Tomasulo 双发射例题。
 - `class/class1.pdf` 已到位，但尚未并入笔记；补入时按第 4.2 节单设模块并注明来源。
 - `操作系统题目/` 目前为空目录（仅有说明文件），待资料补齐。
