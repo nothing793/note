@@ -106,7 +106,22 @@ $$\Bigl|\ \underset{s,r\leftarrow G(s)}{\Pr}[\mathcal{A}'(r)=1]-\underset{r\over
 
 由于 $\dfrac{1}{\mathrm{poly}'(n)}\ne\mathtt{negl}(n)$，这与 $G$ 是 PRG 的假设矛盾。故 **$G$ 是单向函数**。
 
-> 待确认：资料第 (2) 步把括号写错了（写成 $\Pr[f(\mathcal{A}_0(G(x))=G(x)]$），上面已按语义改正为 $\Pr_x[G(\mathcal{A}_0(G(x)))=G(x)]$；资料自己在括号里注明 “$G$ here is essentially the function $f$ in the definition”。
+>整理者批注：
+
+>其实可以这样理解：我们利用逆向算法 \(\mathcal A_0\) 构造一个区分 PRG 输出与真随机串的区分器 \(\mathcal A'\)。其逻辑如下：
+
+>1. 当输入为 \(G(s)\)（也可记作 \(r\)）时，我们用 \(\mathcal A_0\) 尝试求逆得到 \(s'\)，再检验 \(G(s')=r\) 是否成立。若成立，则判定该输入来自 PRG。由于 \(\mathcal A_0\) 本身以不可忽略的概率求逆成功，这一判定在 PRG 输入下成功的概率是不可忽略的。
+
+>2. 当输入为真随机生成的 \(r\) 时，\(\mathcal A_0\) 仍会输出某个 \(s'\)，但 \(r\) 恰好落在 \(G\) 的像中且 \(G(s')=r\) 的概率至多为 \(2^n/2^{2n}=2^{-n}\)，这是可忽略的。
+
+>3. 综合两种情形，\(\mathcal A'\) 区分 PRG 输出与真随机串的优势不可忽略，即
+>\[
+>\left|\Pr_{s}[\mathcal A'(G(s))=1]-\Pr_{r\leftarrow\{0,1\}^{2n}}[\mathcal A'(r)=1]\right|
+>\ge \frac{1}{\mathrm{poly}(n)}-\frac{1}{2^n},
+>\]
+>对充分大的 \(n\) 仍不可忽略。
+
+>然而，PRG 的输出与同长度真随机串是计算不可区分的（CI），这与上述不可忽略的区分优势矛盾。因此，“\(G\) 不是单向函数”的反设不成立，故 \(G\) 是（强）单向函数。
 
 ## 3. Q2.2：OWF 不一定是 PRG
 
