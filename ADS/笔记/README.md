@@ -17,7 +17,7 @@
 | `07_ADS06_回溯算法.md` | 回溯算法（backtracking，含 $\alpha$-$\beta$ 剪枝（alpha-beta pruning））；**复习笔记**，含三个例子的完整复盘与自绘搜索树 |
 | `08_ADS07_分治法与递归式.md` | 分治法（divide and conquer）与递归式（recurrence）：模板、最近点对与 7 点引理、代入法 / 递归树 / 主定理、变量代换；**复习笔记** |
 | `09_ADS08_动态规划.md` | 动态规划（dynamic programming）：矩阵连乘 / 最优二叉搜索树（OBST）/ Floyd / 装配线、真题题型、最长递增子序列（LIS） / 解码计数程序模板、最大内接多边形建模；**复习笔记** |
-| `10_ADS09_贪心算法.md` | 贪心算法（greedy algorithm）与 Huffman 编码（Huffman coding） |
+| `10_ADS09_贪心算法.md` | 贪心算法（greedy algorithm）与 Huffman 编码（Huffman coding）：活动选择、带权活动 DP、SF 的 2-近似、Huffman 两条引理与码表判定、硬币 / 背包 / 集合覆盖；**复习笔记**（2026-11-10） |
 | `11_ADS10_NP完全性.md` | NP 完全性（NP-completeness，归约（reduction）） |
 | `12_ADS11_近似算法.md` | 近似算法（approximation algorithm） |
 | `13_ADS12_局部搜索.md` | 局部搜索（local search）与模拟退火（simulated annealing） |
@@ -34,7 +34,7 @@
 - `fig_*.png`：配图。既有**讲义原页导出**的图，也有**自绘**图（如 `fig_leftist_*`、`fig_skew_*` 由脚本生成）；
   自绘图在图注中均标明「自绘」；`fig_best_polygon.png` 是用户提供的题目配图（原文件 `image.png` 保留未动）；
 - `make_*.py`：生成自绘配图的脚本（`make_avl_figs.py`、`make_splay_figs.py`、`make_amort_figs.py`、
-  `make_leftist_skew_figs.py`、`make_ads02_figs.py`、`make_ads_notes_figs.py`、`make_ads05_figs.py`、`make_ads06_figs.py`、`make_ads07_figs.py`、`make_ads08_figs.py`）——**入库**（`.gitignore` §10 白名单放行），
+  `make_leftist_skew_figs.py`、`make_ads02_figs.py`、`make_ads_notes_figs.py`、`make_ads05_figs.py`、`make_ads06_figs.py`、`make_ads07_figs.py`、`make_ads08_figs.py`、`make_ads09_figs.py`）——**入库**（`.gitignore` §10 白名单放行），
   笔记正文直接链接这些脚本，便于复现；
 - 图一律用**相对路径**引用（`assets/fig_*.png`），不写绝对路径、不内嵌 base64。
 
