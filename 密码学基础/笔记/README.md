@@ -9,9 +9,9 @@
 | `00_索引.md` | 入口：序言、覆盖范围、教材映射、文件列表、阅读顺序、维护记录 |
 | `01_导论与密码学原则.md` | 密码学问题、Kerckhoffs 原则、密码系统要素、可证明安全、MPC 与 ZKP |
 | `02_完美保密与一次性密码本.md` | 香农安全、完美安全、等价证明、Shannon 定理、OTP |
-| `03_单向函数与伪随机生成器.md` | PPT、OWF 三档、大数分解、EAV、计算不可区分、PRG |
+| `03_单向函数与伪随机生成器.md` | PPT、OWF 三档、大数分解、EAV、计算不可区分、PRG、PRG 的结构与稀疏反例 |
 | `04_多消息安全与IND-CPA.md` | reuse、确定性加密的缺陷、IND-CPA、LR-CPA、hybrid argument |
-| `05_伪随机函数与伪随机置换.md` | PRF 定义、PRF ⇒ PRG、PRF ⇒ IND-CPA、PRP、GGM 树、CBC / OFB / CTR |
+| `05_伪随机函数与伪随机置换.md` | PRF 定义、PRF ⇒ PRG、PRF ⇒ IND-CPA、PRP、GGM 树、ECB / CBC / OFB / CTR、PRF 的输入结构 |
 | `06_消息认证码MAC.md` | MAC、EUF-CMA、CBC-MAC、ECBC-MAC、HMAC |
 | `07_哈希函数与Merkle-Damgård结构.md` | 抗碰撞、MD 结构、生日攻击 |
 | `08_CCA安全与认证加密.md` | CCA、认证加密、组合方式 |
@@ -25,9 +25,9 @@
 
 ## 资料来源
 
-1. **课堂记录（主要来源）**：`../class_documentation/class_documentation.md`。`01`–`04` 与 `05` 的 PRF 部分已按它校准；需要查原话时看 `../class_documentation/origin/` 中对应日期的原始转写。
+1. **课堂记录（主要来源）**：`../class_documentation/class_documentation.md`。`01`–`04` 与 `05` 的 PRF 部分按 11-02 前的课堂记录校准；`05` 的 PRP、GGM 与工作模式按 11-16 课堂记录重写。需要查原话时看 `../class_documentation/origin/` 中对应日期的原始转写。
 2. **教材（核对用）**：Katz & Lindell, *Introduction to Modern Cryptography*（2007 年第 1 版），即 `../Introduction_to_Modern_Cryptography.pdf`。用于核对定义、定理编号和课堂没有展开的构造。
-3. **早前整理的 06–14 篇**：仍保留原来的课程资料说明与教材对照，暂未按 `class_documentation.md` 重写。`05` 的 PRP 与工作模式部分也沿用了早期资料，页首已分别注明。引用时先看该篇页首的来源说明。
+3. **早前整理的 06–14 篇**：仍保留原来的课程资料说明与教材对照，暂未按 `class_documentation.md` 重写。`05` 的 PRP、GGM 与工作模式已按 11-16 课堂记录重写；仍沿用早期资料的部分在页首单独注明。引用时先看该篇页首的来源说明。
 
 ## 写作约定
 
