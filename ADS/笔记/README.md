@@ -18,7 +18,7 @@
 | `08_ADS07_分治法与递归式.md` | 分治法（divide and conquer）与递归式（recurrence）：模板、最近点对与 7 点引理、代入法 / 递归树 / 主定理、变量代换；**复习笔记** |
 | `09_ADS08_动态规划.md` | 动态规划（dynamic programming）：矩阵连乘 / 最优二叉搜索树（OBST）/ Floyd / 装配线、真题题型、最长递增子序列（LIS） / 解码计数程序模板、最大内接多边形建模；**复习笔记** |
 | `10_ADS09_贪心算法.md` | 贪心算法（greedy algorithm）与 Huffman 编码（Huffman coding）：活动选择、带权活动 DP、SF 的 2-近似、Huffman 两条引理与码表判定、硬币 / 背包 / 集合覆盖；**复习笔记**（2026-11-10） |
-| `11_ADS10_NP完全性.md` | NP 完全性（NP-completeness，归约（reduction）） |
+| `11_ADS10_NP完全性.md` | NP 完全性（NP-completeness）：P/NP/co-NP、NP-hard/NPC、归约与 3-SAT → 独立集 → 顶点覆盖、HCP → TSP；**复习笔记**（2026-11-17） |
 | `12_ADS11_近似算法.md` | 近似算法（approximation algorithm） |
 | `13_ADS12_局部搜索.md` | 局部搜索（local search）与模拟退火（simulated annealing） |
 | `14_ADS13_随机化算法.md` | 随机化算法（randomized algorithm） |
