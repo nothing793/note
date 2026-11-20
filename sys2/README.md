@@ -1,8 +1,8 @@
 # 计算机系统 II（sys2）
 
 > 浙江大学《计算机系统 II》（Computer Systems II）的讲义、朋辈辅学资料、练习题与整理笔记工作目录。
-> 硬件部分第 1–4 讲讲义署卢立（Li Lu），第 5–6 讲 PDF 标题页署 Haifeng Liu；OS 部分第 0–2 讲署 Wenbo Shen。
-> 最近更新：2026-11-16
+> 硬件部分第 1–4 讲讲义署卢立（Li Lu），第 5–6 讲 PDF 标题页署 Haifeng Liu；OS 部分第 0–3 讲署 Wenbo Shen。
+> 最近更新：2026-11-20
 
 ## 1. 快速入口
 
@@ -16,7 +16,7 @@
 
 | 路径 | 用途 | 处理方式 |
 |---|---|---|
-| `lec/` | 硬件第 1–6 讲、OS 第 0–2 讲讲义 PDF；硬件第 5 讲另保留旧版 `lec05.pptx` | **只读**：不改名、不移动、不修改；保留 `lec02(2)` 的括号与 `lec05-advanced pipeline.pdf` 的空格 |
+| `lec/` | 硬件第 1–6 讲、OS 第 0–3 讲讲义 PDF；硬件第 5 讲另保留旧版 `lec05.pptx` | **只读**：不改名、不移动、不修改；保留 `lec02(2)` 的括号与 `lec05-advanced pipeline.pdf` 的空格 |
 | `class/` | 朋辈辅学资料；当前有 `class1.pdf` | **只读**；知识点可按第 4 节补入笔记，但必须单设模块并注明来源 |
 | `计算机组成题目/` | 计算机组成与流水线 CPU 练习 | 题目在前，答案附在文末并折叠；原始题目截图不随稿保留 |
 | `操作系统题目/` | 操作系统相关练习 | 目前暂无题目；资料到位后按与 `计算机组成题目/` 相同的格式整理 |
@@ -27,7 +27,7 @@
 
 ## 3. 资料层级与标注
 
-1. **讲义 PDF 是主标准**：硬件部分 `lec/lec01`–`lec06`；OS 部分 `lec/00-0_course_syllabus.pdf`、`lec/00-1_computerarchitecture.pdf`、`lec/01_intro.pdf`、`lec/02-1_structures.pdf`、`lec/02-2_openeuler.pdf`。硬件第 5、6 讲以 PDF 为准，旧版 `lec05.pptx` 只用于硬件第 5 讲附录 A 的 Tomasulo 例题。
+1. **讲义 PDF 是主标准**：硬件部分 `lec/lec01`–`lec06`；OS 部分 `lec/00-0_course_syllabus.pdf`、`lec/00-1_computerarchitecture.pdf`、`lec/01_intro.pdf`、`lec/02-1_structures.pdf`、`lec/02-2_openeuler.pdf`、`lec/03-0_processes.pdf`。硬件第 5、6 讲以 PDF 为准，旧版 `lec05.pptx` 只用于硬件第 5 讲附录 A 的 Tomasulo 例题。
 2. **`class/` 是补充资料**：与讲义重复的内容标为“重复·重点”；`classN` 有而 `lecN` 没有的内容标为“补充”。不得用补充资料覆盖讲义口径。
 3. 页码约定：`(p.x)` 指 **PDF 页码**；OS 第 0 讲合并两份 PDF，写成 `(00-0 p.x)` / `(00-1 p.x)`；OS 第 2 讲合并 `02-1_structures.pdf` 与 `02-2_openeuler.pdf`，写成 `(p.x)` / `(02-2 p.x)`；`(s.x)` 只指旧版硬件第 5 讲 PPTX 的幻灯片页码，不要混用。
 4. 来源标注：
@@ -41,7 +41,7 @@
 ### 4.1 笔记
 
 - 硬件部分一篇为 `hardware-0N_第0N讲_<主题>.md`，OS 部分一篇为 `os-0N_第0N讲_<主题>.md`；结构固定：**本讲速览 → 按小节展开（带 PDF 页码）→ 听课重点与易混点 → 课前自测 → 来源、页码对照与待确认**。
-- 配图放 `笔记/assets/`：硬件用 `fig_p<PDF 页码>_<主题>.png`；OS 用 `fig_os000_*` / `fig_os001_*` / `fig_os01_*` / `fig_os02_*` / `fig_os022_*`，避免不同 PDF 的页码相撞；旧版硬件第 5 讲的 `fig_s*.png` 作为历史配图保留，但不与 PDF 页码混用。
+- 配图放 `笔记/assets/`：硬件用 `fig_p<PDF 页码>_<主题>.png`；OS 用 `fig_os000_*` / `fig_os001_*` / `fig_os01_*` / `fig_os02_*` / `fig_os022_*` / `fig_os03_*`，避免不同 PDF 的页码相撞；旧版硬件第 5 讲的 `fig_s*.png` 作为历史配图保留，但不与 PDF 页码混用。
 - 自测题的每条问题带本讲小节锚点；篇末设「关联知识点」，链接本讲、跨讲或原始资料。
 - 硬件第 3、4 讲内容重叠，按所在讲次分别成文；口径差异写在硬件第 4 讲「待确认」中，不擅自合并。
 - 新增或改写内容后，同步更新 `笔记/00_索引.md`；新增 / 改名 / 调整标题后，同步 `网站/mkdocs.yml` 的 `nav`。
@@ -82,7 +82,7 @@ python3 网站/build.py                         # 汇集 → 构建 → 站点�
 ## 7. 当前状态
 
 - 硬件部分已整理到第 6 讲：笔记索引 + `hardware-01`–`hardware-06` 六篇正文，`assets/` 中保存讲义原页导出图与旧版第 5 讲历史配图。
-- OS 部分已整理到第 2 讲：`os-00`（课程导论 + 体系结构回顾）、`os-01`（操作系统概述）与 `os-02`（OS 结构、系统调用、链接与加载，含 `02-2_openeuler.pdf` 的 openEuler 补充讲义）三篇正文。
+- OS 部分已整理到第 3 讲：`os-00`（课程导论 + 体系结构回顾）、`os-01`（操作系统概述）、`os-02`（OS 结构、系统调用、链接与加载，含 `02-2_openeuler.pdf` 的 openEuler 补充讲义）与 `os-03`（进程：PCB、状态、`fork` / `exec` / `wait`、信号、zombie / orphan、调度队列与 ARM64 上下文切换）四篇正文。
 - 硬件第 5 讲正文按新 PDF（76 页，§5.1–§5.3）编排，附录 A 保留旧版 PPTX 的 Tomasulo 双发射例题。
 - `class/class1.pdf` 已到位，但尚未并入笔记；补入时按第 4.2 节单设模块并注明来源。
 - `操作系统题目/` 目前为空目录（仅有说明文件），待资料补齐。
