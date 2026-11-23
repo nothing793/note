@@ -6,7 +6,7 @@
 
 | 路径 | 内容 |
 |---|---|
-| `class_documentation/` | 课堂记录的整理稿、按日期拆分的 8 次课原始转写 |
+| `class_documentation/` | 课堂记录的整理稿、按日期拆分的 9 份课堂转写（第 1–10 次课；11-09 期中无转写） |
 | `笔记/` | 按主题编排的复习笔记，入口是 `笔记/00_索引.md` |
 | `期中复习题.md` | 前七周期中复习题（原创，含参考答案） |
 | `Introduction_to_Modern_Cryptography.pdf` | Katz & Lindell, *Introduction to Modern Cryptography*（2007 年第 1 版），只读引用 |
@@ -15,7 +15,7 @@
 
 ## 资料来源
 
-1. **课堂记录（主要来源）**：`class_documentation/class_documentation.md`。它按 8 次课整理了课程主线、术语和例子（11 月 9 日为期中考试，没有课堂转写）；需要查原话时看 `class_documentation/origin/` 中对应日期的原始转写。
+1. **课堂记录（主要来源）**：`class_documentation/class_documentation.md`。它整理了第 1–10 次课的课程主线、术语和例子（11 月 9 日为期中考试，没有课堂转写）；需要查原话时看 `class_documentation/origin/` 中对应日期的课堂记录或原始转写。
 2. **教材（核对用）**：Katz & Lindell, *Introduction to Modern Cryptography*, Chapman & Hall/CRC, 2007 年第 1 版。课堂记录没有写清的定义、定理编号或构造，按这本教材核对；教材与课堂记录冲突时，笔记中并列说明，不擅自判定。
 3. **不再使用的外部网页**：早期笔记参考过两个网页，现已不作为资料来源，相关链接已从笔记来源说明中移除。
 
@@ -24,7 +24,8 @@
 ## 笔记现状
 
 - `笔记/01`–`05` 已按 `class_documentation.md` 校准。`05` 的 PRF 定义、PRF ⇒ PRG、PRF ⇒ IND-CPA 按 11-02 课堂记录重写；PRP、GGM 与 ECB/CBC/OFB/CTR 按 11-16 课堂记录重写。`03` 补了 PRG 的结构与稀疏反例（11-16）。
-- `笔记/06`–`14` 仍是早前整理的版本，保留了当时的教材对照和课程补充。后续继续重写时，以 `class_documentation/` 和教材为准。
+- `笔记/06` 已按 11-23 课堂记录重写主体：主动攻击者、MAC 语法、EUF、确定性 MAC、PRF 定长 MAC、任意长消息的四次尝试。CBC-MAC、ECBC-MAC、Hash-and-MAC 与 Padding Oracle 仍按教材/早期笔记放在 §6.3 之后的延伸节。
+- `笔记/07`–`14` 仍是早前整理的版本，保留了当时的教材对照和课程补充。后续继续重写时，以 `class_documentation/` 和教材为准。
 - 每篇笔记的结构大致是：速览 → 定义与直觉 → 构造与证明 → 公式汇总 → 易混点 → 复习清单 → 关联知识点 → 来源。
 
 ## 使用方式
