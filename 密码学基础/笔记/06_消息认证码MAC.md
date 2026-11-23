@@ -406,7 +406,7 @@ $$t_0:=0^n,\qquad t_i:=F_k(t_{i-1}\oplus m_i)\ (i=1,\dots,\ell),\qquad \text{输
 
 ## 11. 来源与延伸阅读
 
-- **主要来源**：2026-11-23 课堂记录，原始文件 [`class_documentation/origin/2026-11-23.md`](../class_documentation/origin/2026-11-23.md)；整理稿见 [`class_documentation.md`](../class_documentation/class_documentation.md) 的 11.23 节。
+- **主要来源**：2026-11-23 课堂记录，原始文件 `class_documentation/origin/2026-11-23.md`；整理稿见 `class_documentation/class_documentation.md` 的 11.23 节。
 - **教材（核对用）**：Katz & Lindell, *Introduction to Modern Cryptography*（2007 年第 1 版）**§4.1–§4.5**、**§4.7**。
 - **延伸内容**：§6.3–§6.6 的 CBC-MAC、ECBC-MAC、Hash-and-MAC、Padding Oracle 来自教材与早期课程笔记；配图为早期课程笔记截图，已逐处注明。
 - **未展开/待确认**：11-23 课堂没有给出尝试四的完整构造与效率参数，也没有展开 CBC-MAC；这些留给后续课与教材。
