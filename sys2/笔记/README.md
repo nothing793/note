@@ -1,6 +1,6 @@
 # 计算机系统 II · 笔记（`sys2/笔记/`）
 
-「计算机系统 II」各讲笔记的 **Markdown 原件**与讲义原页配图。硬件部分第 1–4 讲署卢立 Li Lu，第 5–6 讲署 Haifeng Liu；OS 部分第 0–3 讲署 Wenbo Shen。
+「计算机系统 II」各讲笔记的 **Markdown 原件**与讲义原页配图。硬件部分第 1–4 讲署卢立 Li Lu，第 5–6 讲署 Haifeng Liu；OS 部分第 0–4 讲署 Wenbo Shen。
 本目录是笔记的「家」：改内容改这里的文件，站点构建时会由 `网站/prepare.py` 复制到 `网站/.docs/`（**不要**直接改生成副本）。
 
 ## 目录内容
@@ -18,7 +18,8 @@
 | `os-01_第01讲_操作系统概述.md` | OS 第 1 讲：OS 的定义与规模、启动、多道程序与分时、内核不是普通进程、特权指令与用户态 / 内核态、ARM64 / RISC-V 模式、中断 / 异常 / 系统调用 / timer、五大服务 |
 | `os-02_第02讲_OS结构与链接加载.md` | OS 第 2 讲：OS 服务与用户接口、系统调用与系统调用表、系统程序、ELF / 静态链接 / 动态链接、`execve` 与加载器、OS 设计目标与策略 / 机制分离、单体 / 分层 / 微内核 / 混合结构、构建启动与调试工具；补充讲义：openEuler 的背景、版本节奏、生态、平台框架、鲲鹏与四类增强 |
 | `os-03_第03讲_进程.md` | OS 第 3 讲：进程与程序、地址空间与栈帧、PCB / `task_struct`、五状态与队列、`fork` / `exec` / `exit` / `wait`、信号、zombie 与 orphan、调度队列、ARM64 上下文切换、内核栈与 `pt_regs`、`fork` 的两个返回值、Linux 调度代码演进 |
-| `assets/` | 配图。硬件第 1–6 讲命名 `fig_p<PDF 页码>_<主题>.png`；OS 第 0 讲用 `fig_os000_*` / `fig_os001_*`，OS 第 1 讲用 `fig_os01_*`，OS 第 2 讲用 `fig_os02_*`（`02-1_structures.pdf`）与 `fig_os022_*`（`02-2_openeuler.pdf`），OS 第 3 讲用 `fig_os03_*`（`03-0_processes.pdf`）。**均为讲义原页导出**（白底、正立），非自绘 |
+| `os-04_第04讲_调度入门与Linux调度代码演进.md` | OS 第 4 讲（2026-11-24 课堂记录，无新 PDF）：调度目标与队列、`schedule()` 与 `switch_to` 的分工、`sleep_on` 与 `motor_wait`、Linux 0.11 / 2.3.0 的 PCB 与调度代码、进程切换的三次上下文切换、与流水线调度的区别 |
+| `assets/` | 配图。硬件第 1–6 讲命名 `fig_p<PDF 页码>_<主题>.png`；OS 第 0 讲用 `fig_os000_*` / `fig_os001_*`，OS 第 1 讲用 `fig_os01_*`，OS 第 2 讲用 `fig_os02_*`（`02-1_structures.pdf`）与 `fig_os022_*`（`02-2_openeuler.pdf`），OS 第 3 讲用 `fig_os03_*`（`03-0_processes.pdf`）；OS 第 4 讲复用其中 p.58、p.73、p.74 的 `fig_os03_*` 图。**均为讲义原页导出**（白底、正立），非自绘 |
 
 > `幻灯片*.PNG` 是旧版配图的原始重复截图，已取消 Git 追踪并由 `.gitignore` 排除；本地文件可保留，但不要重新加入索引。
 
@@ -30,7 +31,7 @@
 - OS 第 0 讲合并了 `00-0_course_syllabus.pdf` 与 `00-1_computerarchitecture.pdf`，所以页码写成 `(00-0 p.x)` 与 `(00-1 p.x)`，不要混用；
 - OS 第 2 讲合并了 `02-1_structures.pdf` 与 `02-2_openeuler.pdf`，`(p.x)` 指前者，`(02-2 p.x)` 指后者；
 - 硬件第 3、4 讲内容有重叠（第 4 讲是第 3 讲的加详），两讲以**所在讲次**分别成文，口径差异在该篇的「待确认」里注明；
-- 硬件第 5 讲正文按 PDF（76 页，§5.1–§5.3）编排，只有附录 A 用旧版 PPTX 的 `(s.x)` 页码；硬件第 6 讲与 OS 各讲全篇用 PDF 页码（OS 第 2 讲的补充讲义用 `(02-2 p.x)`）；OS 第 3 讲用 `(p.x)` 指 `03-0_processes.pdf` 的物理页码。
+- 硬件第 5 讲正文按 PDF（76 页，§5.1–§5.3）编排，只有附录 A 用旧版 PPTX 的 `(s.x)` 页码；硬件第 6 讲与 OS 各讲全篇用 PDF 页码（OS 第 2 讲的补充讲义用 `(02-2 p.x)`）；OS 第 3 讲用 `(p.x)` 指 `03-0_processes.pdf` 的物理页码；OS 第 4 讲没有新 PDF，`(p.x)` 仍指 `03-0_processes.pdf`。
 
 ## 注意事项
 

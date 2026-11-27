@@ -19,7 +19,7 @@
 | `09_ADS08_动态规划.md` | 动态规划（dynamic programming）：矩阵连乘 / 最优二叉搜索树（OBST）/ Floyd / 装配线、真题题型、最长递增子序列（LIS） / 解码计数程序模板、最大内接多边形建模；**复习笔记** |
 | `10_ADS09_贪心算法.md` | 贪心算法（greedy algorithm）与 Huffman 编码（Huffman coding）：活动选择、带权活动 DP、SF 的 2-近似、Huffman 两条引理与码表判定、硬币 / 背包 / 集合覆盖；**复习笔记**（2026-11-10） |
 | `11_ADS10_NP完全性.md` | NP 完全性（NP-completeness）：P/NP/co-NP、NP-hard/NPC、归约与 3-SAT → 独立集 → 顶点覆盖、HCP → TSP；**复习笔记**（2026-11-17） |
-| `12_ADS11_近似算法.md` | 近似算法（approximation algorithm）；含 *Discussion 14 / 15* 与「重量不超过 $N^2$ 的背包」讨论题（2026-11-24） |
+| `12_ADS11_近似算法.md` | 近似算法（approximation algorithm）；**复习笔记**（2026-11-24），含 *Discussion 14 / 15*、「重量不超过 $N^2$ 的背包」与课程记录口径说明 |
 | `13_ADS12_局部搜索.md` | 局部搜索（local search）与模拟退火（simulated annealing） |
 | `14_ADS13_随机化算法.md` | 随机化算法（randomized algorithm） |
 | `15_ADS14_并行算法.md` | 并行算法（parallel algorithm）与并行模型（PRAM 等） |
